@@ -3,36 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Culebra Map - Dark Mode</title>
+    <title>Culebra Map</title>
     
-    <!-- 1. Map Software (Leaflet) -->
+    <!-- 1. Map Software -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 
     <style>
         /* 2. Full Screen Map Settings */
-        #map { height: 100vh; width: 100%; background: #242424; }
+        #map { height: 100vh; width: 100%; background: #ddd; }
         body { margin: 0; padding: 0; }
     </style>
 </head>
 <body>
 
-    <!-- 3. The Map Box -->
     <div id="map"></div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // 4. Setup Map View (Culebra)
+            // 3. Setup Map View (Culebra)
             var map = L.map('map').setView([18.31, -65.30], 13);
 
-            // 5. DARK MODE TILES (CartoDB Dark Matter)
-            L.tileLayer('https://{s}://{z}/{x}/{y}{r}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org">OpenStreetMap</a> contributors &copy; <a href="https://carto.com">CARTO</a>',
-                subdomains: 'abcd',
-                maxZoom: 20
+            // 4. FIXED TILE LAYER: This is the part that was broken
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap'
             }).addTo(map);
 
-            // 6. Your Culebra Locations
+            // 5. Your Culebra Locations
             var locations = [
                 { name: "Todo Culebra Plaza Hub", lat: 18.3012, lng: -65.30213, desc: "www.shopculebra.com" },
                 { name: "Zaco's Tacos", lat: 18.300, lng: -65.29558, desc: "Zacos Tacos" },
@@ -40,13 +37,12 @@
                 { name: "Playa Zoni", lat: 18.3197, lng: -65.2757, desc: "Culebra Camping" }
             ];
 
-            // 7. Add Pins to Map
+            // 6. Add Pins
             locations.forEach(function(p) {
                 L.marker([p.lat, p.lng]).addTo(map)
                     .bindPopup("<b>" + p.name + "</b><br>" + (p.desc || ""));
             });
             
-            // Safari visibility nudge
             setTimeout(function(){ map.invalidateSize(); }, 500);
         });
     </script>

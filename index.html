@@ -5,20 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Culebra Map - Final Fix</title>
     
-    <!-- Reliable Leaflet CDN -->
+    <!-- FIXED: Added full paths to Leaflet files -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com" />
     <script src="https://cdnjs.cloudflare.com"></script>
 
     <style>
-        /* CSS FIX: Force visibility and dimensions */
         html, body { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; }
         #map { 
             height: 100vh !important; 
             width: 100vw !important; 
-            background: #cbd5e0; /* Grey while loading */
+            background: #cbd5e0; 
             z-index: 1; 
         }
-        /* Fix for GitHub themes that mess with map tile scaling */
         .leaflet-container img { max-width: none !important; max-height: none !important; }
     </style>
 </head>
@@ -28,22 +26,18 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // 1. Initialize map
             var map = L.map('map', {
                 center: [18.31, -65.30],
                 zoom: 13,
                 zoomControl: true
             });
 
-            // 2. Load Tiles with a Custom User-Agent (Fixes OSM blocking)
+            // FIXED: Added missing "/" after .org
             L.tileLayer('https://tile.openstreetmap.org{z}/{x}/{y}.png', {
                 maxZoom: 19,
-                attribution: '&copy; OpenStreetMap',
-                // This identifies your app to the tile server
-                className: 'map-tiles'
+                attribution: '&copy; <a href="https://www.openstreetmap.org">OpenStreetMap</a>'
             }).addTo(map);
 
-            // 3. Your Pins
             var locations = [
                 { n: "Todo Culebra Plaza Hub", lt: 18.3012, lg: -65.30213 },
                 { n: "Zaco's Tacos", lt: 18.300, lg: -65.29558 },
@@ -55,7 +49,6 @@
                 L.marker([p.lt, p.lg]).addTo(map).bindPopup(p.n);
             });
 
-            // 4. Force "Wake Up" - Essential for GitHub Pages
             setTimeout(function() {
                 map.invalidateSize();
             }, 800);

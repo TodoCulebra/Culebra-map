@@ -1,44 +1,42 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>My Map</title>
-    <!-- 1. This loads the Map software (Leaflet) -->
+    <title>Culebra Map</title>
+    <!-- 1. Load the Map Library -->
     <link rel="stylesheet" href="https://unpkg.com" />
     <script src="https://unpkg.com"></script>
-    
     <style>
-        /* 2. This makes the map fill the screen */
+        /* 2. Set the Map Size */
         #map { height: 600px; width: 100%; }
     </style>
 </head>
 <body>
-
     <h1>Culebra Locations</h1>
     <div id="map"></div>
 
     <script>
-        // 3. This creates the map and centers it on Culebra
+        // 3. Create the Map centered on Culebra
         var map = L.map('map').setView([18.31, -65.30], 13);
 
-        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        L.tileLayer('https://tile.openstreetmap.org{z}/{x}/{y}.png', {
             attribution: '&copy; OpenStreetMap'
         }).addTo(map);
 
-        // 4. This is your data (moved from the .json file into the code so it's easier)
+        // 4. Your Locations Data
         var data = {
           "locations": [
             { "name": "Todo Culebra Plaza Hub", "lat": 18.3012, "lng": -65.30213, "description": "ORDER HERE: <a href='https://www.shopculebra.com' target='_blank'>www.shopculebra.com</a>" },
             { "name": "Zaco's Tacos Restaurant", "lat": 18.300, "lng": -65.2955823, "description": "ORDER HERE: <a href='https://www.zacostacos.com' target='_blank'>Zacos Tacos</a>" },
             { "name": "Kokomo Hotel", "lat": 18.29, "lng": -65.30213, "description": "ORDER HERE: <a href='https://www.shopculebra.com' target='_blank'>www.shopculebra.com</a>" },
-            { "name": "Playa Flamenco", "lat": 18.3280301, "lng": -65.3358813, "description": "ORDER HERE: <a href='https://www.snorkelwithlocals.com/' target='_blank'>Snorkel with Locals</a>" },
-            { "name": "Tamarindo Beach", "lat": 18.3179129, "lng": -65.3912512, "description": "ORDER HERE: <a href='https://www.snorkelwithlocals.com/' target='_blank'>Snorkel with Locals</a>" },
-            { "name": "Malones Beach", "lat": 18.3031684, "lng": -65.3128741, "description": "ORDER HERE: <a href='https://www.snorkelwithlocals.com/' target='_blank'>Snorkel with Locals</a>" },
-            { "name": "Playa Dátiles", "lat": 18.2961511, "lng": -65.3032101, "description": "ORDER HERE: <a href='https://www.snorkelwithlocals.com/' target='_blank'>Snorkel with Locals</a>" },
-            { "name": "Playa Zoni", "lat": 18.3197313, "lng": -65.2757021, "description": "Camp Today!: <a href='https://www.culebracamping.com/' target='_blank'>Culebra Camping</a>" }
+            { "name": "Playa Flamenco", "lat": 18.3280301, "lng": -65.3358813, "description": "ORDER HERE: <a href='https://www.snorkelwithlocals.com' target='_blank'>Snorkel with Locals</a>" },
+            { "name": "Tamarindo Beach", "lat": 18.3179129, "lng": -65.3912512, "description": "ORDER HERE: <a href='https://www.snorkelwithlocals.com' target='_blank'>Snorkel with Locals</a>" },
+            { "name": "Malones Beach", "lat": 18.3031684, "lng": -65.3128741, "description": "ORDER HERE: <a href='https://www.snorkelwithlocals.com' target='_blank'>Snorkel with Locals</a>" },
+            { "name": "Playa Dátiles", "lat": 18.2961511, "lng": -65.3032101, "description": "ORDER HERE: <a href='https://www.snorkelwithlocals.com' target='_blank'>Snorkel with Locals</a>" },
+            { "name": "Playa Zoni", "lat": 18.3197313, "lng": -65.2757021, "description": "Camp Today!: <a href='https://www.culebracamping.com' target='_blank'>Culebra Camping</a>" }
           ]
         };
 
-        // 5. This puts the pins on the map automatically
+        // 5. Add Pins to the Map
         data.locations.forEach(function(place) {
             L.marker([place.lat, place.lng])
                 .addTo(map)

@@ -3,21 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Culebra Map</title>
+    <title>Culebra Map - Fixed</title>
     
-    <!-- FIXED: Correct Leaflet CSS and JavaScript CDN links -->
-    <link rel="stylesheet" href="https://unpkg.com" />
-    <script src="https://unpkg.com"></script>
+    <!-- Using Cloudflare CDN for maximum reliability on GitHub Pages -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com" />
+    <script src="https://cdnjs.cloudflare.com"></script>
 
     <style>
-        /* Ensures the map fills the entire screen */
-        html, body, #map { 
-            height: 100%; 
+        /* CSS FIX: Explicitly set height and ensure no image conflicts */
+        body, html { margin: 0; padding: 0; height: 100%; width: 100%; }
+        #map { 
+            height: 100vh; 
             width: 100%; 
-            margin: 0; 
-            padding: 0; 
-            background: #eee; 
+            background: #cbd5e0; /* Grey placeholder while loading */
         }
+        /* Prevents GitHub/Theme CSS from breaking map tiles */
+        .leaflet-container img { max-width: none !important; }
     </style>
 </head>
 <body>
@@ -25,13 +26,17 @@
     <div id="map"></div>
 
     <script>
-        window.onload = function() {
-            // Initialize the map and set view to Culebra
-            var map = L.map('map').setView([18.31, -65.30], 13);
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize map
+            var map = L.map('map', {
+                center: [18.31, -65.30],
+                zoom: 13
+            });
 
-            // Load Map Tiles from OpenStreetMap
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org">OpenStreetMap</a> contributors'
+            // Use OpenStreetMap with a direct HTTPS link
+            L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; <a href="http://www.openstreetmap.org">OpenStreetMap</a>'
             }).addTo(map);
 
             // Your Locations
@@ -42,16 +47,17 @@
                 { n: "Playa Zoni", lt: 18.3197, lg: -65.2757 }
             ];
 
-            // Add markers for each location
+            // Add Markers
             locations.forEach(function(p) {
                 L.marker([p.lt, p.lg]).addTo(map).bindPopup(p.n);
             });
 
-            // Force the map to recalculate dimensions after load
-            setTimeout(function() {
-                map.invalidateSize();
-            }, 400);
-        };
+            // CRITICAL GITHUB PAGES FIX: 
+            // Forces map to "wake up" after a tiny delay to fix the grey box bug
+            setTimeout(function(){ 
+                map.invalidateSize(); 
+            }, 500);
+        });
     </script>
 </body>
 </html>

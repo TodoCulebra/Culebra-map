@@ -32,12 +32,22 @@
             }).addTo(map);
 
             // Your Locations
-            var locations = [
-                { name: "Todo Culebra Plaza Hub", lat: 18.3012, lng: -65.30213, desc: "www.shopculebra.com" },
-                { name: "Zaco's Tacos", lat: 18.300, lng: -65.29558, desc: "Zacos Tacos" },
-                { name: "Playa Flamenco", lat: 18.3280, lng: -65.3358, desc: "Snorkel with Locals" },
-                { name: "Playa Zoni", lat: 18.3197, lng: -65.2757, desc: "Culebra Camping" }
-            ];
+            // ... existing code ...
+        // Your Locations
+        var locations = [
+            { 
+                name: "Melones Beach", 
+                lat: 18.303469, 
+                lng: -65.310197, 
+                desc: "Marine reserve reef snorkeling (fish everywhere!), turtles, rays, island views.<br><br><a href='https://bluewatercharters.com' target='_blank'>bluewatercharters.com</a>" 
+            },
+            { name: "Todo Culebra Plaza Hub", lat: 18.3012, lng: -65.30213, desc: "www.shopculebra.com" },
+            { name: "Zaco's Tacos", lat: 18.300, lng: -65.29558, desc: "Zacos Tacos" },
+            { name: "Playa Flamenco", lat: 18.3280, lng: -65.3358, desc: "Snorkel with Locals" },
+            { name: "Playa Zoni", lat: 18.3197, lng: -65.2757, desc: "Culebra Camping" }
+        ];
+// ... rest of the script ...
+
 
             // Add the Pins to the map
             locations.forEach(function(p) {

@@ -31,14 +31,9 @@
                 attribution: '&copy; OpenStreetMap'
             }).addTo(map);
 
-            <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        var map = L.map('map').setView([18.31, -65.30], 13);
-
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap'
-        }).addTo(map);
-
+            // Your Locations
+            // ... existing code ...
+        // Your Locations
         var locations = [
             { 
                 name: "Melones Beach", 
@@ -47,26 +42,27 @@
                 desc: "Marine reserve reef snorkeling (fish everywhere!), turtles, rays, island views.<br><br><a href='https://bluewatercharters.com' target='_blank'>bluewatercharters.com</a>" 
             },
             { 
-                name: "Playa Flamenco", 
-                lat: 18.331667, 
-                lng: -65.318056, 
-                desc: "Consistently voted one of the world's best beaches, WW2 tanks, white sands, crystal clear water, this is the premier Culebra destination" 
-            },
-            { 
-                name: "Playa Zoni", 
-                lat: 18.319636, 
-                lng: -65.254862, 
-                desc: "A beautiful 15 minute drive from town, offering stunning views of Culebrita, Cayo Norte, and even Saint Thomas!! Beautiful walking beach with a wonderful secluded vibe." 
-            },
+        name: "Playa Flamenco", 
+        lat: 18.331667, 
+        lng: -65.318056, 
+        desc: "Consistently voted one of the world's best beaches, WW2 tanks, white sands, crystal clear water, this is the premier Culebra destination" 
+    },
             { name: "Todo Culebra Plaza Hub", lat: 18.3012, lng: -65.30213, desc: "www.shopculebra.com" },
-            { name: "Zaco's Tacos", lat: 18.300, lng: -65.29558, desc: "Zacos Tacos" }
+            { name: "Zaco's Tacos", lat: 18.300, lng: -65.29558, desc: "Zacos Tacos" },
+            { name: "Playa Zoni", lat: 18.3197, lng: -65.2757, desc: "Culebra Camping" }
         ];
+// ... rest of the script ...
 
-        locations.forEach(function(p) {
-            L.marker([p.lat, p.lng]).addTo(map)
-                .bindPopup("<b>" + p.name + "</b><br>" + (p.desc || ""));
+
+            // Add the Pins to the map
+            locations.forEach(function(p) {
+                L.marker([p.lat, p.lg || p.lng]).addTo(map)
+                    .bindPopup("<b>" + p.name + "</b><br>" + (p.desc || ""));
+            });
+            
+            // Final nudge for Safari
+            setTimeout(function(){ map.invalidateSize(); }, 500);
         });
-        
-        setTimeout(function(){ map.invalidateSize(); }, 500);
-    });
-</script>
+    </script>
+</body>
+</html>

@@ -34,7 +34,7 @@
             // Your Locations
             // ... existing code ...
         // Your Locations
-                                var locations = [
+                                            var locations = [
                 { 
                     name: "Melones Beach", 
                     lat: 18.303469, 
@@ -57,19 +57,14 @@
                 { name: "Zaco's Tacos", lat: 18.300, lng: -65.29558, desc: "Zacos Tacos" }
             ];
 
-
-// ... rest of the script ...
-
-
             // Add the Pins to the map
             locations.forEach(function(p) {
-                L.marker([p.lat, p.lg || p.lng]).addTo(map)
+                // This 'p.lng' must match the 'lng' in your list above
+                L.marker([p.lat, p.lng]).addTo(map)
                     .bindPopup("<b>" + p.name + "</b><br>" + (p.desc || ""));
             });
             
-            // Final nudge for Safari
+            // Fix for MacBook M1/Safari display
             setTimeout(function(){ map.invalidateSize(); }, 500);
         });
     </script>
-</body>
-</html>

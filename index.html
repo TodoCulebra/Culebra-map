@@ -139,7 +139,10 @@
             // Add Pins
             locations.forEach(function(p) {
                 L.marker([p.lat, p.lng]).addTo(map)
-                    .bindPopup("<b>" + p.name + "</b><br>" + p.desc);
+                    .bindPopup("<b>" + p.name + "</b><br>" + p.desc, {
+                        maxWidth: 350, // This allows the text and images to spread out
+                        className: 'custom-popup' 
+                    });
             });
 
             // 1. Search Bar Logic

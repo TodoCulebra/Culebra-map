@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Culebra Map</title>
@@ -14,7 +15,12 @@
         #map { height: 100vh; width: 100%; background: #ddd; }
         body { margin: 0; padding: 0; }
     </style>
-</head>
+</head><!-- Search Bar Engine -->
+<link rel="stylesheet" href="https://unpkg.com" />
+<script src="https://unpkg.com"></script>
+<!-- Icons for buttons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com" />
+
 <body>
 
     <!-- 3. THE CONTAINER: This is where the map will sit -->
@@ -82,6 +88,55 @@
     desc: "<img src='https://www.discoverpuertorico.com/sites/default/files/listing_images/profile/8059/Hector-El-Protector_69BCB335-5056-A36A-080F2CD5E9C0A166-69bcb26d5056a36_69bcb61d-5056-a36a-0867dfd14ace9c20.jpg' style='width:100%; border-radius:5px; margin-bottom:8px;'><br>Hector the Protector, our beloved guardian, protector of the island, and bringer of safe passage for those coming or going. Constructed in 2014 by Thomas Dambo, and reconstructed by locals in 2017 after Hurricane Maria, this is his 4th troll, his most famous include those in Seattle, and Amsterdam. Visit Hector today!" 
 },
 
+// 1. SEARCH BAR (Top Right)
+L.Control.geocoder({
+    defaultMarkGeocode: false
+}).on('markgeocode', function(e) {
+    var bbox = e.geocode.bbox;
+    var poly = L.polygon([
+        bbox.getSouthEast(), bbox.getNorthEast(),
+        bbox.getNorthWest(), bbox.getSouthWest()
+    ]);
+    map.fitBounds(poly.getBounds());
+}).addTo(map);
+
+// 2. FIND ME / GEOLOCATION
+map.locate({setView: false, watch: true});
+map.on('locationfound', function(e) {
+    var radius = e.accuracy / 2;
+    L.marker(e.latlng).addTo(map).bindPopup("You are within " + radius + " meters of here").openPopup();
+    L.circle(e.latlng, radius).addTo(map);
+});
+
+// 3. HOME / RESET BUTTON
+var homeButton = L.Control.extend({
+    options: { position: 'topleft' },
+    onAdd: function (map) {
+        var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
+        container.innerHTML = '<button style="font-size:20px; cursor:pointer; width:30px; height:30px;">🏠</button>';
+        container.onclick = function(){
+            map.setView([18.31, -65.30], 13);
+        }
+        return container;
+    }
+});
+map.addControl(new homeButton());
+
+// 4. FULLSCREEN TOGGLE
+// (Most modern browsers allow this via a simple button that toggles the map div)
+var fsButton = L.Control.extend({
+    options: { position: 'topleft' },
+    onAdd: function (map) {
+        var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
+        container.innerHTML = '<button style="font-size:20px; cursor:pointer; width:30px; height:30px;">↕️</button>';
+        container.onclick = function(){
+            var elem = document.getElementById("map");
+            if (elem.requestFullscreen) { elem.requestFullscreen(); }
+        }
+        return container;
+    }
+});
+map.addControl(new fsButton());
 
 
             ];

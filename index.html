@@ -3,38 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Culebra Map</title>
+    <title>Culebra Explorer Map</title>
     
-    <!-- 1. Leaflet Core -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-
-    <!-- 2. Search Bar Plugin Links -->
+    <!-- 1. LEAFLET ENGINE (Must be first) -->
     <link rel="stylesheet" href="https://unpkg.com" />
     <script src="https://unpkg.com"></script>
 
+    <!-- 2. SEARCH BAR PLUGIN (Must be second) -->
+    <link rel="stylesheet" href="https://unpkg.com" />
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+
     <style>
         #map { height: 100vh; width: 100%; background: #ddd; }
-        body { margin: 0; padding: 0; }
+        body { margin: 0; padding: 0; font-family: sans-serif; }
 
-        /* Style for the custom Home and Toggle buttons */
+        /* Makes the custom Home/Fullscreen buttons look professional */
         .leaflet-control-custom button {
-            background: white;
-            border: 2px solid rgba(0,0,0,0.2);
-            border-radius: 4px;
-            width: 34px;
-            height: 34px;
-            cursor: pointer;
-            font-size: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            background: white; border: 2px solid rgba(0,0,0,0.2);
+            border-radius: 4px; width: 34px; height: 34px;
+            cursor: pointer; font-size: 20px; display: flex;
+            align-items: center; justify-content: center;
             box-shadow: 0 1px 5px rgba(0,0,0,0.4);
         }
         .leaflet-control-custom button:hover { background-color: #f4f4f4; }
-        
-        /* Popup text formatting */
-        .leaflet-popup-content { font-size: 14px; line-height: 1.4; }
+        .leaflet-popup-content { font-size: 14px; line-height: 1.5; }
     </style>
 </head>
 <body>
@@ -43,92 +35,66 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Setup map
+            // A. Setup Map Instance
             var map = L.map('map').setView([18.31, -65.30], 13);
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; OpenStreetMap'
             }).addTo(map);
 
+            // B. Your Location Data
             var locations = [
-                { 
-                    name: "Culebra Ferry Terminal", 
-                    lat: 18.301451, 
-                    lng: -65.302530, 
-                    desc: "Our one and only Ferry Terminal, please be sure to arrive 1 hour before departure to avoid delays!",
-                },
+                { name: "Culebra Ferry Terminal", lat: 18.301451, lng: -65.302530, desc: "Arrive 1 hour early!" },
                 { 
                     name: "Isla Culebrita", 
                     lat: 18.318654, 
                     lng: -65.227238, 
-                    desc: "<img src='https://upload.wikimedia.org/wikipedia/commons/3/3f/Culebrita_Island%2C_Culebra_Island%2C_Puerto_Rico.jpg' style='width:100%;border-radius:8px;margin-bottom:8px;'><br>Welcome to Culebrita! The Caribbean's last true virgin island! From Army tanks situated in the brush, to the historic lighthouse in the middle of the island, the natural jacuzzi's on the northeast point of the island, snorkeling the reefs with turtles and rays, this is sure to be an unforgettable experience!!! Located a short 15 minute boat ride from the main island of Culebra, Culebrita offers stunning views of Saint Thomas, nearby Cayo Norte, and of course, Culebra and it's Playa Larga. Think about it, a 5 hour adventure on an unhabitated island for $60 per person!!! <br><br><b>PRO TIP:</b> Order groceries to be delivered to your water taxi before your excursion from <a href='https://www.shopculebra.com' target='_blank'>www.shopculebra.com</a>. <br><br>Book your trip today with <a href='https://www.gammyswatertours.com' target='_blank'>Gammy's Water Tours</a>!" 
+                    desc: "<img src='https://upload.wikimedia.org' style='width:100%;border-radius:8px;margin-bottom:8px;'><br>Virgin island paradise. Visit with <a href='https://www.gammyswatertours.com'>Gammy's</a>!" 
                 },
-                { 
-                    name: "Punta Soldado", 
-                    lat: 18.281876, 
-                    lng: -65.286575, 
-                    desc: "<img src='./soldado.jpg' style='width:100%;border-radius:8px;margin-bottom:8px;'><br>Our southernmost beach, offering stunning sunset views, Vieques, and sometimes you can see Saint Croix in the distance! Make sure you have a Jeep, Bronco, or E-Bike! Golf Carts are strictly prohibited here as the road leading down to the beach is steep, rocky and unpaved. If you go with an E-Bike, make sure to grab one from <a href='https://www.todoculebra.com' target='_blank'>www.todoculebra.com</a>" 
-                },
-                { 
-                    name: "Playa Datiles", 
-                    lat: 18.296597, 
-                    lng: -65.300179, 
-                    desc: "Most romantic beach in the Caribbean! Stellar views of Cayo Luis Peña, Vieques, and El Yunque on the main Island!<br><br>Make sure to rent a Jeep, a Bronco, or an E-Bike, as the terrain is unpaved, steep, has ruts and requires 4x4 or a capable E-Bike/E-Moped, such as those from <a href='https://www.todoculebra.com' target='_blank'>www.todoculebra.com</a>." 
-                },
-                { 
-                    name: "Playa Melones", 
-                    lat: 18.303469, 
-                    lng: -65.310197, 
-                    desc: "Marine reserve reef snorkeling (fish everywhere!), turtles, rays, island views.<br><br><a href='https://bluewatercharters.com' target='_blank'>bluewatercharters.com</a>" 
-                },
-                { 
-                    name: "Playa Zoni", 
-                    lat: 18.319636, 
-                    lng: -65.254862, 
-                    desc: "A beautiful 15 minute drive from town, offering stunning views of Culebrita, Cayo Norte, and even Saint Thomas!! Beautiful walking beach with a wonderful secluded vibe." 
-                },
-                { 
-                    name: "Playa Flamenco", 
-                    lat: 18.331667, 
-                    lng: -65.318056, 
-                    desc: "Consistently voted one of the world's best beaches, WW2 tanks, white sands, crystal clear water, this is the premier Culebra destination" 
-                },
+                { name: "Punta Soldado", lat: 18.281876, lng: -65.286575, desc: "Sunset views. 4x4 or E-Bike only! No golf carts." },
+                { name: "Playa Datiles", lat: 18.296597, lng: -65.300179, desc: "Romantic beach. Terrain is very rugged." },
+                { name: "Playa Melones", lat: 18.303469, lng: -65.310197, desc: "Top tier snorkeling. <a href='https://bluewatercharters.com'>Blue Water Charters</a>" },
+                { name: "Playa Zoni", lat: 18.319636, lng: -65.254862, desc: "Secluded vibes and views of St. Thomas." },
+                { name: "Playa Flamenco", lat: 18.331667, lng: -65.318056, desc: "World famous white sand and iconic tanks." },
                 { 
                     name: "Hector El Protector", 
                     lat: 18.300682, 
                     lng: -65.302170, 
-                    desc: "<img src='https://www.discoverpuertorico.com/sites/default/files/listing_images/profile/8059/Hector-El-Protector_69BCB335-5056-A36A-080F2CD5E9C0A166-69bcb26d5056a36_69bcb61d-5056-a36a-0867dfd14ace9c20.jpg' style='width:100%; border-radius:5px; margin-bottom:8px;'><br>Hector the Protector, our beloved guardian, protector of the island, and bringer of safe passage for those coming or going. Constructed in 2014 by Thomas Dambo, and reconstructed by locals in 2017 after Hurricane Maria, this is his 4th troll, his most famous include those in Seattle, and Amsterdam. Visit Hector today!" 
+                    desc: "<img src='https://www.discoverpuertorico.com' style='width:100%; border-radius:5px;'><br>The famous wooden troll guardian." 
                 }
             ];
 
-            // Add Pins with wider popup settings
+            // C. Add Markers (Fixed the loop and popup width)
             locations.forEach(function(p) {
                 L.marker([p.lat, p.lng]).addTo(map)
-                    .bindPopup("<b>" + p.name + "</b><br>" + p.desc, { maxWidth: 320 });
+                    .bindPopup("<b>" + p.name + "</b><br>" + p.desc, { maxWidth: 300 });
             });
 
-            // 1. SEARCH BAR
-            L.Control.geocoder({ defaultMarkGeocode: true }).addTo(map);
+            // D. FEATURE 1: Search Bar (Top Right)
+            L.Control.geocoder({
+                defaultMarkGeocode: true,
+                placeholder: "Search Culebra..."
+            }).addTo(map);
 
-            // 2. RE-CENTER (HOME) BUTTON
+            // E. FEATURE 2: Re-center (Home) Button
             var HomeBtn = L.Control.extend({
                 options: { position: 'topleft' },
                 onAdd: function (map) {
                     var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
-                    container.innerHTML = '<button type="button" title="Re-center Map">🏠</button>';
-                    container.onclick = function(){ map.setView([18.31, -65.30], 13); };
+                    container.innerHTML = '<button type="button" title="Home">🏠</button>';
+                    container.onclick = function() { map.setView([18.31, -65.30], 13); };
                     return container;
                 }
             });
             map.addControl(new HomeBtn());
 
-            // 3. FULLSCREEN (TOGGLE) BUTTON
+            // F. FEATURE 3: Fullscreen Toggle Button
             var FSBtn = L.Control.extend({
                 options: { position: 'topleft' },
                 onAdd: function (map) {
                     var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
-                    container.innerHTML = '<button type="button" title="Toggle Fullscreen">↕️</button>';
-                    container.onclick = function(){
+                    container.innerHTML = '<button type="button" title="Fullscreen">↕️</button>';
+                    container.onclick = function() {
                         var elem = document.getElementById("map");
                         if (!document.fullscreenElement) { elem.requestFullscreen(); } 
                         else { document.exitFullscreen(); }
@@ -138,6 +104,13 @@
             });
             map.addControl(new FSBtn());
 
+            // G. Geolocation Support (Circle for where you are)
+            map.locate({setView: false, watch: true});
+            map.on('locationfound', function(e) {
+                L.circle(e.latlng, { radius: e.accuracy / 2, color: 'blue' }).addTo(map);
+            });
+
+            // Safari fix
             setTimeout(function(){ map.invalidateSize(); }, 500);
         });
     </script>

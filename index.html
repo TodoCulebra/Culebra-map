@@ -3,21 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Culebra Explorer Map</title>
+    <title>Culebra Explorer</title>
     
     <!-- 1. LEAFLET ENGINE -->
-    <link rel="stylesheet" href="https://unpkg.com" crossorigin="" />
-    <script src="https://unpkg.com" crossorigin=""></script>
+    <link rel="stylesheet" href="https://unpkg.com" />
+    <script src="https://unpkg.com"></script>
 
     <!-- 2. SEARCH PLUGIN -->
     <link rel="stylesheet" href="https://unpkg.com" />
     <script src="https://unpkg.com"></script>
 
     <style>
-        #map { height: 100vh; width: 100%; background: #ddd; }
-        body { margin: 0; padding: 0; font-family: sans-serif; }
+        html, body { margin: 0; padding: 0; height: 100%; width: 100%; }
+        #map { 
+            height: 100vh; 
+            width: 100%; 
+            background: #aad3df; /* Light blue background while loading */
+        }
 
-        /* Custom Button Styling */
+        /* Button Styling */
         .leaflet-control-custom button {
             background: white !important;
             border: 2px solid rgba(0,0,0,0.2) !important;
@@ -27,11 +31,9 @@
             display: flex; align-items: center; justify-content: center;
             box-shadow: 0 1px 5px rgba(0,0,0,0.4);
         }
-        .leaflet-control-custom button:hover { background-color: #f4f4f4 !important; }
         
-        /* Popup Formatting */
-        .leaflet-popup-content { font-size: 14px; line-height: 1.4; width: 300px !important; }
-        .leaflet-popup-content img { border-radius: 8px; margin-bottom: 8px; }
+        .leaflet-popup-content { font-size: 14px; line-height: 1.4; width: 280px !important; }
+        .leaflet-popup-content img { border-radius: 8px; margin-bottom: 8px; width: 100%; }
     </style>
 </head>
 <body>
@@ -40,83 +42,87 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            var map = L.map('map').setView([18.31, -65.30], 13);
+            // Initialize map with a specific renderer to prevent grey screen
+            var map = L.map('map', {
+                center: [18.31, -65.30],
+                zoom: 13,
+                tap: false // Helps with mobile clicking
+            });
 
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; OpenStreetMap'
+            // Reliable Tile Layer
+            L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
             }).addTo(map);
 
-            // ALL YOUR ORIGINAL LOCATIONS RESTORED
             var locations = [
                 { 
                     name: "Culebra Ferry Terminal", 
                     lat: 18.301451, lng: -65.302530, 
-                    desc: "Our one and only Ferry Terminal, please be sure to arrive 1 hour before departure to avoid delays!" 
+                    desc: "Our one and only Ferry Terminal! Arrive 1 hour early." 
                 },
                 { 
                     name: "Isla Culebrita", 
                     lat: 18.318654, lng: -65.227238, 
-                    desc: "<img src='https://upload.wikimedia.org' style='width:100%;'><br>Welcome to Culebrita! The Caribbean's last true virgin island! From Army tanks to the historic lighthouse, snorkeling the reefs with turtles, this is sure to be an unforgettable experience!!! Book with <a href='https://www.gammyswatertours.com' target='_blank'>Gammy's Water Tours</a>!" 
+                    desc: "<img src='https://upload.wikimedia.org'>The Caribbean's last true virgin island! Book with <a href='https://www.gammyswatertours.com' target='_blank'>Gammy's</a>!" 
                 },
                 { 
                     name: "Punta Soldado", 
                     lat: 18.281876, lng: -65.286575, 
-                    desc: "Our southernmost beach, offering stunning sunset views. Golf Carts are strictly prohibited here as the road is steep and rocky. Grab an E-Bike from <a href='https://www.todoculebra.com' target='_blank'>www.todoculebra.com</a>" 
+                    desc: "Southernmost beach with sunset views. Jeep/E-Bike only! Get one at <a href='https://www.todoculebra.com' target='_blank'>todoculebra.com</a>" 
                 },
                 { 
                     name: "Playa Datiles", 
                     lat: 18.296597, lng: -65.300179, 
-                    desc: "Most romantic beach in the Caribbean! Requires 4x4 or a capable E-Bike/E-Moped from <a href='https://www.todoculebra.com' target='_blank'>www.todoculebra.com</a>." 
+                    desc: "Most romantic beach! Requires 4x4 or a capable E-Bike." 
                 },
                 { 
                     name: "Playa Melones", 
                     lat: 18.303469, lng: -65.310197, 
-                    desc: "Marine reserve reef snorkeling (fish everywhere!), turtles, rays. <a href='https://bluewatercharters.com' target='_blank'>bluewatercharters.com</a>" 
+                    desc: "Marine reserve snorkeling. <a href='https://bluewatercharters.com' target='_blank'>bluewatercharters.com</a>" 
                 },
                 { 
                     name: "Playa Zoni", 
                     lat: 18.319636, lng: -65.254862, 
-                    desc: "A beautiful 15 minute drive from town. Beautiful walking beach with a wonderful secluded vibe." 
+                    desc: "Beautiful 15 minute drive. Secluded vibe." 
                 },
                 { 
                     name: "Playa Flamenco", 
                     lat: 18.331667, lng: -65.318056, 
-                    desc: "Consistently voted one of the world's best beaches, WW2 tanks, white sands, and crystal clear water." 
+                    desc: "World famous white sands and WW2 tanks." 
                 },
                 { 
                     name: "Hector El Protector", 
                     lat: 18.300682, lng: -65.302170, 
-                    desc: "<img src='https://www.discoverpuertorico.com' style='width:100%;'><br>Hector the Protector, our beloved guardian. Constructed by Thomas Dambo. Visit Hector today!" 
+                    desc: "<img src='https://www.discoverpuertorico.com'>Our wooden troll guardian!" 
                 }
             ];
 
-            // Add the Pins
             locations.forEach(function(p) {
                 L.marker([p.lat, p.lng]).addTo(map)
-                    .bindPopup("<b>" + p.name + "</b><br>" + p.desc, { maxWidth: 300 });
+                    .bindPopup("<b>" + p.name + "</b><br>" + p.desc);
             });
 
-            // 1. SEARCH BAR
-            L.Control.geocoder({ defaultMarkGeocode: true, placeholder: "Search Culebra..." }).addTo(map);
+            // 1. Search
+            L.Control.geocoder({ defaultMarkGeocode: true }).addTo(map);
 
-            // 2. RE-CENTER (HOME) BUTTON
+            // 2. Home
             var HomeBtn = L.Control.extend({
                 options: { position: 'topleft' },
                 onAdd: function (map) {
                     var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
-                    container.innerHTML = '<button type="button" title="Home">🏠</button>';
+                    container.innerHTML = '<button type="button">🏠</button>';
                     container.onclick = function() { map.setView([18.31, -65.30], 13); };
                     return container;
                 }
             });
             map.addControl(new HomeBtn());
 
-            // 3. FULLSCREEN (TOGGLE) BUTTON
+            // 3. Toggle Fullscreen
             var FSBtn = L.Control.extend({
                 options: { position: 'topleft' },
                 onAdd: function (map) {
                     var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
-                    container.innerHTML = '<button type="button" title="Fullscreen">↕️</button>';
+                    container.innerHTML = '<button type="button">↕️</button>';
                     container.onclick = function() {
                         var elem = document.getElementById("map");
                         if (!document.fullscreenElement) { elem.requestFullscreen(); } 
@@ -127,7 +133,10 @@
             });
             map.addControl(new FSBtn());
 
-            setTimeout(function(){ map.invalidateSize(); }, 500);
+            // FORCE RE-RENDER
+            setTimeout(function() { 
+                map.invalidateSize(); 
+            }, 200);
         });
     </script>
 </body>

@@ -4,40 +4,82 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Culebra Map</title>
-
-<!--
-  FIX 1: Moved from unpkg to cdnjs — faster globally, avoids the
-  cold-start timeouts that silently kill the map on Chrome/Windows.
-  FIX 2: crossorigin="anonymous" instead of bare crossorigin="" —
-  Chrome is stricter about CORS and rejects the bare attribute form.
--->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" crossorigin="anonymous"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" crossorigin="anonymous"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet-routing-machine/3.2.12/leaflet-routing-machine.min.css" crossorigin="anonymous"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-routing-machine/3.2.12/leaflet-routing-machine.min.js" crossorigin="anonymous"></script>
-
 <style>
   *, *::before, *::after { box-sizing: border-box; }
-  html, body {
-    height: 100%;
-    margin: 0;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  }
+  html, body { height: 100%; margin: 0; font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
   body { display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-orient: vertical; -webkit-box-direction: normal; -ms-flex-direction: column; flex-direction: column; }
-
-  /* FIX 3: min-height:0 forces Chrome to respect flex:1 on #map.
-     Without this, Chrome can collapse the map div to zero height. */
   #map { -webkit-box-flex: 1; -ms-flex: 1; flex: 1; min-height: 0; width: 100%; }
 
+  /* ── WELCOME BADGE ── */
   .welcome-badge {
-    position: absolute; top: 12px; left: 50%; -webkit-transform: translateX(-50%); transform: translateX(-50%);
+    position: absolute; top: 12px; left: 50%;
+    -webkit-transform: translateX(-50%); transform: translateX(-50%);
     z-index: 1000; background: linear-gradient(135deg, #006994, #00a0b0); color: #fff;
     padding: 6px 18px; font-size: 14px; font-weight: 600; border-radius: 999px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.4); white-space: nowrap; pointer-events: none; letter-spacing: 0.01em;
   }
 
-  /* POPUP */
-  .leaflet-popup-content-wrapper { background: #fff; border-radius: 14px; box-shadow: 0 6px 24px rgba(0,0,0,0.18); padding: 0; overflow: hidden; border: none; }
+  /* ── LEGEND ── */
+  #legend {
+    position: absolute;
+    bottom: 32px;
+    left: 16px;
+    z-index: 1001;
+    background: #0b2240;
+    border: 2px solid #1a4a7a;
+    border-radius: 14px;
+    padding: 14px 16px 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    min-width: 190px;
+  }
+  #legend h3 {
+    margin: 0 0 10px 0;
+    color: #7ecfde;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .legend-btn {
+    display: -webkit-box; display: -ms-flexbox; display: flex;
+    -webkit-box-align: center; -ms-flex-align: center; align-items: center;
+    gap: 10px;
+    width: 100%;
+    background: rgba(255,255,255,0.06);
+    border: 1.5px solid rgba(255,255,255,0.12);
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin-bottom: 6px;
+    color: #e8f4f8;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: left;
+    -webkit-transition: background 0.15s, border-color 0.15s; transition: background 0.15s, border-color 0.15s;
+  }
+  .legend-btn:last-child { margin-bottom: 0; }
+  .legend-btn:hover { background: rgba(255,255,255,0.13); border-color: rgba(255,255,255,0.25); }
+  .legend-btn.active { background: rgba(126,207,222,0.2); border-color: #7ecfde; color: #fff; }
+  .legend-btn .pin-preview {
+    width: 28px; height: 34px; flex-shrink: 0;
+    display: -webkit-box; display: -ms-flexbox; display: flex;
+    -webkit-box-align: center; -ms-flex-align: center; align-items: center;
+    -webkit-box-pack: center; -ms-flex-pack: center; justify-content: center;
+  }
+  .legend-hint {
+    margin-top: 10px;
+    font-size: 10px;
+    color: #7ecfde;
+    opacity: 0.7;
+    text-align: center;
+  }
+
+  /* ── POPUP ── */
+  .leaflet-popup-content-wrapper { background: #fff; border-radius: 14px; box-shadow: 0 6px 24px rgba(0,0,0,0.22); padding: 0; overflow: hidden; border: none; }
   .leaflet-popup-tip { background: #fff; }
   .leaflet-popup-content { margin: 0; font-size: 13px; line-height: 1.5; min-width: 250px; max-width: 300px; }
   .popup-img { width: 100%; height: 130px; -o-object-fit: cover; object-fit: cover; display: block; }
@@ -55,9 +97,6 @@
   .btn-directions:hover { opacity: 0.88; }
   .btn-directions:disabled { background: #aaa; cursor: not-allowed; }
 
-  /* FIX 4: removed env(safe-area-inset-bottom) — unsupported on
-     Chrome/Windows and was breaking the entire flex column layout,
-     leaving #map with zero rendered height. */
   .fallback-row { display: none; gap: 6px; margin-top: 6px; }
   .fallback-row.visible { display: -webkit-box; display: -ms-flexbox; display: flex; }
   .btn-fallback { -webkit-box-flex: 1; -ms-flex: 1; flex: 1; padding: 7px 0; border: none; border-radius: 7px; font-size: 12px; font-weight: 600; cursor: pointer; text-align: center; text-decoration: none; color: #fff; -webkit-transition: opacity 0.15s; transition: opacity 0.15s; display: block; }
@@ -68,6 +107,7 @@
   .route-status { font-size: 11px; color: #888; text-align: center; margin-top: 4px; min-height: 16px; }
   .route-status.error { color: #e53935; }
 
+  /* ── TURN PANEL ── */
   #turn-panel {
     position: absolute; bottom: 0; left: 0; right: 0; z-index: 1000;
     background: #fff; border-radius: 18px 18px 0 0; box-shadow: 0 -4px 24px rgba(0,0,0,0.18);
@@ -90,6 +130,7 @@
   .turn-icon { font-size: 17px; -ms-flex-negative: 0; flex-shrink: 0; width: 22px; text-align: center; margin-top: 1px; }
   .turn-dist { font-size: 11px; color: #888; margin-top: 2px; }
 
+  /* ── USER DOT ── */
   .user-dot { width: 14px; height: 14px; border-radius: 50%; background: #2f80ff; border: 3px solid #fff; box-shadow: 0 0 0 4px rgba(47,128,255,0.35), 0 0 0 8px rgba(47,128,255,0.12); -webkit-animation: pulse 2s infinite; animation: pulse 2s infinite; }
   @-webkit-keyframes pulse {
     0%,100% { box-shadow: 0 0 0 4px rgba(47,128,255,0.35), 0 0 0 8px rgba(47,128,255,0.12); }
@@ -100,6 +141,7 @@
     50%      { box-shadow: 0 0 0 6px rgba(47,128,255,0.45), 0 0 0 14px rgba(47,128,255,0.18); }
   }
 
+  /* ── MAP CONTROLS ── */
   .leaflet-control-custom button { background: white; border: 2px solid rgba(0,0,0,0.2); border-radius: 4px; width: 34px; height: 34px; cursor: pointer; font-size: 18px; display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-align: center; -ms-flex-align: center; align-items: center; -webkit-box-pack: center; -ms-flex-pack: center; justify-content: center; box-shadow: 0 1px 5px rgba(0,0,0,0.3); margin: 2px; }
   .leaflet-control-custom button:hover { background: #f4f4f4; }
   .leaflet-routing-container { display: none !important; }
@@ -110,6 +152,49 @@
 <div class="welcome-badge">Welcome to Culebra! &#127796; Tap any marker for directions</div>
 <div id="map"></div>
 
+<!-- LEGEND -->
+<div id="legend">
+  <h3>&#128506; Filter Map</h3>
+  <button class="legend-btn" id="btn-filter-beach" onclick="filterMarkers('beach')">
+    <span class="pin-preview">
+      <svg width="24" height="30" viewBox="0 0 24 30" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 0C7.03 0 3 4.03 3 9c0 7 9 21 9 21s9-14 9-21c0-4.97-4.03-9-9-9z" fill="#00b4d8" stroke="#fff" stroke-width="1.5"/>
+        <text x="12" y="14" text-anchor="middle" font-size="10" fill="#fff">&#127958;</text>
+      </svg>
+    </span>
+    Beaches
+  </button>
+  <button class="legend-btn" id="btn-filter-ferry" onclick="filterMarkers('ferry')">
+    <span class="pin-preview">
+      <svg width="24" height="30" viewBox="0 0 24 30" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 0C7.03 0 3 4.03 3 9c0 7 9 21 9 21s9-14 9-21c0-4.97-4.03-9-9-9z" fill="#2563eb" stroke="#fff" stroke-width="1.5"/>
+        <text x="12" y="14" text-anchor="middle" font-size="10" fill="#fff">&#9972;</text>
+      </svg>
+    </span>
+    Ferry Terminal
+  </button>
+  <button class="legend-btn" id="btn-filter-hector" onclick="filterMarkers('hector')">
+    <span class="pin-preview">
+      <svg width="24" height="30" viewBox="0 0 24 30" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 0C7.03 0 3 4.03 3 9c0 7 9 21 9 21s9-14 9-21c0-4.97-4.03-9-9-9z" fill="#7c3aed" stroke="#fff" stroke-width="1.5"/>
+        <text x="12" y="14" text-anchor="middle" font-size="10" fill="#fff">&#129548;</text>
+      </svg>
+    </span>
+    Hector El Protector
+  </button>
+  <button class="legend-btn" id="btn-filter-gas" onclick="filterMarkers('gas')">
+    <span class="pin-preview">
+      <svg width="24" height="30" viewBox="0 0 24 30" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 0C7.03 0 3 4.03 3 9c0 7 9 21 9 21s9-14 9-21c0-4.97-4.03-9-9-9z" fill="#ea580c" stroke="#fff" stroke-width="1.5"/>
+        <text x="12" y="14" text-anchor="middle" font-size="10" fill="#fff">&#9981;</text>
+      </svg>
+    </span>
+    Gas Station
+  </button>
+  <div class="legend-hint">Tap a filter to show only that type.<br>Tap again or click the map to reset.</div>
+</div>
+
+<!-- TURN-BY-TURN DRAWER -->
 <div id="turn-panel">
   <div id="turn-handle"></div>
   <div id="turn-header">
@@ -124,9 +209,7 @@
 
 <script>
 /* ══════════════════════════════════════════════════════════════════
-   INVISIBLE 1000x1000 GRID
-   Never drawn. Snaps user GPS to nearest ~16m x ~8m intersection
-   before routing so the start point is stable despite GPS drift.
+   INVISIBLE GRID — snap GPS to stable ~16m x ~8m point pre-routing
 ══════════════════════════════════════════════════════════════════ */
 var BOUNDS   = { west: -65.365, east: -65.215, south: 18.270, north: 18.345 };
 var CELLS    = 1000;
@@ -143,8 +226,6 @@ function snapToGrid(lat, lng) {
 
 /* ══════════════════════════════════════════════════════════════════
    LOCATIONS
-   FIX 5: defined first, before any code that references them,
-   so Chrome never hits a reference error on page load.
 ══════════════════════════════════════════════════════════════════ */
 var locations = [
   { name: 'Culebra Ferry Terminal', lat: 18.301451, lng: -65.302530, type: 'ferry', img: null,
@@ -181,17 +262,52 @@ L.tileLayer(
 
 L.control.zoom({ position: 'bottomright' }).addTo(map);
 
+/* HOME BUTTON */
 var HomeBtn = L.Control.extend({
   options: { position: 'topleft' },
   onAdd: function () {
     var c = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
-    c.innerHTML = '<button title="Re-center">&#127968;</button>';
+    c.innerHTML = '<button title="Re-center map">&#127968;</button>';
     L.DomEvent.on(c, 'click', function () { map.setView([18.308, -65.290], 13); });
     L.DomEvent.disableClickPropagation(c);
     return c;
   }
 });
 map.addControl(new HomeBtn());
+
+/* ══════════════════════════════════════════════════════════════════
+   PIN SVG BUILDER
+   Each type gets a bold teardrop pin in its own color, with a
+   white border and a strong drop shadow so it pops off satellite.
+══════════════════════════════════════════════════════════════════ */
+var pinColors = { beach: '#00b4d8', ferry: '#2563eb', gas: '#ea580c', hector: '#7c3aed' };
+var pinEmoji  = { beach: '&#127958;', ferry: '&#9972;', gas: '&#9981;', hector: '&#129548;' };
+
+function makePinIcon(type) {
+  var color = pinColors[type] || '#555';
+  var emoji = pinEmoji[type] || '&#128205;';
+  /* Bold teardrop SVG: large, white-stroked, with a shadow filter */
+  var svg =
+    '<svg xmlns="http://www.w3.org/2000/svg" width="38" height="50" viewBox="0 0 38 50">' +
+      '<defs>' +
+        '<filter id="sh" x="-40%" y="-20%" width="180%" height="160%">' +
+          '<feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="rgba(0,0,0,0.55)"/>' +
+        '</filter>' +
+      '</defs>' +
+      '<path d="M19 1C10.16 1 3 8.16 3 17c0 11.5 16 32 16 32S35 28.5 35 17C35 8.16 27.84 1 19 1z"' +
+        ' fill="' + color + '" stroke="#ffffff" stroke-width="2.5" filter="url(#sh)"/>' +
+      '<circle cx="19" cy="17" r="9" fill="rgba(255,255,255,0.25)"/>' +
+      '<text x="19" y="22" text-anchor="middle" font-size="13" font-family="serif">' + emoji + '</text>' +
+    '</svg>';
+
+  return L.divIcon({
+    html: svg,
+    className: '',
+    iconSize:   [38, 50],
+    iconAnchor: [19, 50],
+    popupAnchor:[0, -52]
+  });
+}
 
 /* ══════════════════════════════════════════════════════════════════
    STATE
@@ -202,41 +318,89 @@ var userMarker    = null;
 var userAccCircle = null;
 var activeRoute   = null;
 var watchId       = null;
+var activeFilter  = null;   // currently active legend filter ('beach', 'ferry', etc.)
+var markerObjects = [];     // { marker, type } for all destination markers
 
 function clearRoute() {
   if (activeRoute) {
-    try { map.removeControl(activeRoute); } catch (e) { /* ignore */ }
+    try { map.removeControl(activeRoute); } catch (e) {}
     activeRoute = null;
   }
   document.getElementById('turn-panel').classList.remove('open');
 }
 
 /* ══════════════════════════════════════════════════════════════════
+   FILTER LOGIC
+   filterMarkers(type) — show only that type, hide the rest.
+   If the same type is clicked again, reset to show all.
+   Clicking the map also resets.
+══════════════════════════════════════════════════════════════════ */
+function filterMarkers(type) {
+  /* Toggle off if same filter clicked again */
+  if (activeFilter === type) {
+    resetFilter();
+    return;
+  }
+
+  activeFilter = type;
+
+  /* Update legend button states */
+  var btns = document.querySelectorAll('.legend-btn');
+  for (var bi = 0; bi < btns.length; bi++) { btns[bi].classList.remove('active'); }
+  var activeBtn = document.getElementById('btn-filter-' + type);
+  if (activeBtn) { activeBtn.classList.add('active'); }
+
+  /* Show/hide markers */
+  for (var mi = 0; mi < markerObjects.length; mi++) {
+    if (markerObjects[mi].type === type) {
+      markerObjects[mi].marker.addTo(map);
+    } else {
+      map.removeLayer(markerObjects[mi].marker);
+    }
+  }
+
+  map.closePopup();
+}
+
+function resetFilter() {
+  activeFilter = null;
+
+  /* Clear all active states */
+  var btns = document.querySelectorAll('.legend-btn');
+  for (var bi = 0; bi < btns.length; bi++) { btns[bi].classList.remove('active'); }
+
+  /* Show all markers */
+  for (var mi = 0; mi < markerObjects.length; mi++) {
+    markerObjects[mi].marker.addTo(map);
+  }
+}
+
+/* Click on map background resets filter */
+map.on('click', function () {
+  if (activeFilter) { resetFilter(); }
+});
+
+/* ══════════════════════════════════════════════════════════════════
    HELPERS
-   FIX 6: replaced emoji literals with unicode escapes — emoji
-   characters in JS source can confuse Chrome's JS parser when the
-   file encoding isn't detected correctly, causing silent failures.
 ══════════════════════════════════════════════════════════════════ */
 function turnIcon(type, modifier) {
   var t = ((type || '') + ' ' + (modifier || '')).toLowerCase();
-  if (t.indexOf('depart')     !== -1) return '\uD83D\uDE80';
-  if (t.indexOf('arrive')     !== -1) return '\uD83D\uDCCD';
-  if (t.indexOf('roundabout') !== -1) return '\uD83D\uDD04';
-  if (t.indexOf('sharp left') !== -1) return '\u21B0';
-  if (t.indexOf('left')       !== -1) return '\u2B05\uFE0F';
-  if (t.indexOf('sharp right')!== -1) return '\u21B1';
-  if (t.indexOf('right')      !== -1) return '\u27A1\uFE0F';
-  if (t.indexOf('straight')   !== -1) return '\u2B06\uFE0F';
-  if (t.indexOf('continue')   !== -1) return '\u2B06\uFE0F';
-  if (t.indexOf('uturn')      !== -1) return '\u21A9\uFE0F';
+  if (t.indexOf('depart')      !== -1) return '\uD83D\uDE80';
+  if (t.indexOf('arrive')      !== -1) return '\uD83D\uDCCD';
+  if (t.indexOf('roundabout')  !== -1) return '\uD83D\uDD04';
+  if (t.indexOf('sharp left')  !== -1) return '\u21B0';
+  if (t.indexOf('left')        !== -1) return '\u2B05\uFE0F';
+  if (t.indexOf('sharp right') !== -1) return '\u21B1';
+  if (t.indexOf('right')       !== -1) return '\u27A1\uFE0F';
+  if (t.indexOf('straight')    !== -1) return '\u2B06\uFE0F';
+  if (t.indexOf('continue')    !== -1) return '\u2B06\uFE0F';
+  if (t.indexOf('uturn')       !== -1) return '\u21A9\uFE0F';
   return '\u2B06\uFE0F';
 }
-
 function fmtDist(m) {
   if (m == null) return '';
   return m >= 1000 ? (m / 1000).toFixed(1) + ' km' : Math.round(m) + ' m';
 }
-
 function fmtTime(s) {
   if (s == null) return '';
   var m = Math.round(s / 60);
@@ -245,9 +409,6 @@ function fmtTime(s) {
 
 /* ══════════════════════════════════════════════════════════════════
    ROUTING
-   1. Snap GPS to nearest invisible grid point
-   2. OSRM route -> blue line on map + turn-by-turn drawer
-   3. On failure ONLY: show Apple / Google Maps fallback links
 ══════════════════════════════════════════════════════════════════ */
 function requestRoute(destName, destLat, destLng, statusEl, fallbackEl, btnEl) {
   if (userLat === null) {
@@ -328,7 +489,7 @@ function requestRoute(destName, destLat, destLng, statusEl, fallbackEl, btnEl) {
   });
 
   activeRoute.on('routingerror', function () {
-    try { map.removeControl(activeRoute); } catch (e) { /* ignore */ }
+    try { map.removeControl(activeRoute); } catch (e) {}
     activeRoute = null;
     btnEl.disabled = false;
     btnEl.textContent = 'Get Directions';
@@ -345,29 +506,11 @@ function requestRoute(destName, destLat, destLng, statusEl, fallbackEl, btnEl) {
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   MARKERS
-   FIX 7: replaced forEach with a for loop + IIFE — forEach with
-   closures behaves differently across browser JS engines when the
-   outer variable (p) is captured. The IIFE pattern is universally
-   safe across Chrome, Safari, Firefox, and Edge.
-
-   FIX 8: cloneNode to replace the button on every popupopen.
-   Chrome fires ALL stacked addEventListener handlers; Safari only
-   fires the last one. Without this, each time the popup is
-   reopened Chrome fires multiple simultaneous route requests.
-   Replacing the node with a clone wipes all prior listeners,
-   guaranteeing exactly one handler no matter how often it opens.
+   MARKERS — bold SVG pins, popupopen wiring, filter registration
 ══════════════════════════════════════════════════════════════════ */
-var typeEmojiHtml = { beach: '&#127958;', ferry: '&#9972;&#65039;', gas: '&#9981;', hector: '&#129548;' };
-
 for (var mi = 0; mi < locations.length; mi++) {
   (function (p) {
-    var emojiHtml = typeEmojiHtml[p.type] || '&#128205;';
-
-    var markerIcon = L.divIcon({
-      html: '<div style="font-size:24px;line-height:1;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.6));">' + emojiHtml + '</div>',
-      className: '', iconSize: [28, 28], iconAnchor: [14, 28]
-    });
+    var icon = makePinIcon(p.type);
 
     var imgHtml = p.img
       ? '<img class="popup-img" src="' + p.img + '" onerror="this.style.display=\'none\'" alt="">'
@@ -386,8 +529,11 @@ for (var mi = 0; mi < locations.length; mi++) {
         '</div>' +
       '</div>';
 
-    var marker = L.marker([p.lat, p.lng], { icon: markerIcon })
+    var marker = L.marker([p.lat, p.lng], { icon: icon })
       .bindPopup(popupHtml, { maxWidth: 310, minWidth: 250 });
+
+    /* Register in filter list */
+    markerObjects.push({ marker: marker, type: p.type });
 
     marker.on('popupopen', function (e) {
       var el         = e.popup.getElement();
@@ -395,12 +541,11 @@ for (var mi = 0; mi < locations.length; mi++) {
       var statusEl   = el.querySelector('.route-status');
       var fallbackEl = el.querySelector('.fallback-row');
 
-      // Reset visible state each open
       statusEl.textContent = '';
       statusEl.className = 'route-status';
       fallbackEl.classList.remove('visible');
 
-      // Replace button with a fresh clone to strip all prior event listeners
+      /* Clone button to wipe stacked listeners (Chrome fix) */
       var freshBtn = btn.cloneNode(true);
       freshBtn.disabled = false;
       freshBtn.textContent = 'Get Directions';

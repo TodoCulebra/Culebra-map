@@ -1,542 +1,490 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Culebra Map - TRUE ROAD ROUTING</title>
-    
-    <!-- Leaflet Core -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Culebra Map</title>
 
-    <!-- Leaflet Routing Machine + OSRM -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
-    <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+<!-- Leaflet -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 
-    <!-- Search Bar Plugin -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-control-geocoder/dist/Control.Geocoder.css" />
-    <script src="https://cdn.jsdelivr.net/npm/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+<!-- Leaflet Routing Machine (pinned) -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css"/>
+<script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
 
-    <style>
-        html, body {
-            height: 100%;
-            margin: 0;
-        }
-        body {
-            display: flex;
-            flex-direction: column;
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        }
-        #map {
-            flex: 1;
-            width: 100%;
-            background: #ddd;
-        }
-        .welcome-badge-wrapper {
-            position: absolute;
-            z-index: 1000;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            pointer-events: none;
-        }
-        .welcome-badge {
-            display: inline-block;
-            background: linear-gradient(135deg, #006994, #00a0b0);
-            color: #ffffff;
-            padding: 6px 14px;
-            font-size: 15px;
-            font-weight: 600;
-            letter-spacing: 0.03em;
-            border-radius: 999px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.25);
-            pointer-events: auto;
-            white-space: nowrap;
-        }
-        .leaflet-control-custom button {
-            background: white;
-            border: 2px solid rgba(0,0,0,0.2);
-            border-radius: 4px;
-            width: 34px;
-            height: 34px;
-            cursor: pointer;
-            font-size: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 1px 5px rgba(0,0,0,0.4);
-            margin: 2px;
-        }
-        .leaflet-control-custom button:hover { background-color: #f4f4f4; }
-        .leaflet-popup-content { 
-            font-size: 14px; 
-            line-height: 1.4; 
-            max-width: 360px;
-        }
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+  body { display: flex; flex-direction: column; }
 
-        /* DIRECTIONS PANEL STYLES */
-        .directions-panel {
-            margin-top: 8px;
-            padding: 12px;
-            background: rgba(47,128,255,0.08);
-            border-radius: 8px;
-            border-left: 4px solid #2f80ff;
-            display: none;
-        }
-        .directions-header {
-            font-weight: 600;
-            color: #006694;
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
-        .route-info-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 4px;
-            font-size: 13px;
-        }
-        .route-line {
-            margin-top: 8px;
-            height: 4px;
-            background: linear-gradient(90deg, #00a0b0, #2f80ff);
-            border-radius: 2px;
-            display: none;
-            box-shadow: 0 1px 3px rgba(47,128,255,0.3);
-        }
-        .directions-btn {
-            margin-top: 8px;
-            padding: 6px 14px;
-            background: linear-gradient(135deg, #006994, #00a0b0);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            width: 100%;
-            transition: all 0.2s;
-        }
-        .directions-btn:hover {
-            background: linear-gradient(135deg, #005a80, #008c9a);
-            transform: translateY(-1px);
-        }
-        .directions-btn.loading {
-            background: linear-gradient(135deg, #666, #999);
-        }
+  #map { flex: 1; width: 100%; }
 
-        /* LEGEND CONTROL */
-        .legend-control {
-            background: transparent;
-            border-radius: 6px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-            font-size: 13px;
-            line-height: 1.4;
-            min-width: 160px;
-        }
-        .legend-toggle-button {
-            width: 100%;
-            border: none;
-            background: #004a7c;
-            color: #ffffff;
-            padding: 6px 10px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 600;
-            text-align: left;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .legend-toggle-button:hover { background: #003a63; }
-        .legend-panel { 
-            margin-top: 4px;
-            background: #0b2540;
-            color: #ffffff;
-            border-radius: 6px;
-            padding: 8px 10px;
-            display: none;
-        }
-        .legend-panel.open { display: block; }
-        .legend-title { font-weight: 600; margin-bottom: 6px; font-size: 13px; }
-        .legend-button-group { display: flex; flex-direction: column; gap: 4px; }
-        .legend-button {
-            border: 1px solid rgba(255,255,255,0.3);
-            background: rgba(255,255,255,0.06);
-            border-radius: 4px;
-            padding: 4px 8px;
-            cursor: pointer;
-            text-align: left;
-            font-size: 12px;
-            color: #ffffff;
-            transition: all 0.15s;
-        }
-        .legend-button:hover {
-            background: rgba(255,255,255,0.16);
-            border-color: rgba(255,255,255,0.7);
-        }
-        .legend-button.active {
-            background: #ffffff;
-            color: #0b2540;
-            border-color: #ffffff;
-        }
-        .gas-emoji-icon {
-            font-size: 24px;
-            line-height: 24px;
-            text-align: center;
-        }
-        /* GLOWING BLUE DOT - Apple Maps Style */
-        .user-location-dot {
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: #2f80ff;
-            border: 3px solid #ffffff;
-            box-shadow: 
-                0 0 0 4px rgba(47,128,255,0.4),
-                0 0 0 8px rgba(47,128,255,0.2),
-                0 0 0 12px rgba(47,128,255,0.1),
-                inset 0 2px 0 rgba(255,255,255,0.6);
-            animation: pulse 2s infinite;
-        }
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 4px rgba(47,128,255,0.4), 0 0 0 8px rgba(47,128,255,0.2), 0 0 0 12px rgba(47,128,255,0.1), inset 0 2px 0 rgba(255,255,255,0.6); }
-            50% { box-shadow: 0 0 0 6px rgba(47,128,255,0.5), 0 0 0 12px rgba(47,128,255,0.3), 0 0 0 18px rgba(47,128,255,0.15), inset 0 2px 0 rgba(255,255,255,0.6); }
-            100% { box-shadow: 0 0 0 4px rgba(47,128,255,0.4), 0 0 0 8px rgba(47,128,255,0.2), 0 0 0 12px rgba(47,128,255,0.1), inset 0 2px 0 rgba(255,255,255,0.6); }
-        }
-    </style>
+  .welcome-badge {
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    background: linear-gradient(135deg, #006994, #00a0b0);
+    color: #fff;
+    padding: 6px 18px;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 999px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+    white-space: nowrap;
+    pointer-events: none;
+    letter-spacing: 0.01em;
+  }
+
+  .leaflet-popup-content-wrapper {
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.18);
+    padding: 0;
+    overflow: hidden;
+    border: none;
+  }
+  .leaflet-popup-tip { background: #fff; }
+  .leaflet-popup-content {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.5;
+    min-width: 250px;
+    max-width: 300px;
+  }
+  .popup-img { width: 100%; height: 130px; object-fit: cover; display: block; }
+  .popup-body { padding: 12px 14px 14px; }
+  .popup-title { font-size: 15px; font-weight: 700; color: #111; margin-bottom: 6px; }
+  .popup-desc  { font-size: 12px; color: #555; margin-bottom: 12px; line-height: 1.5; }
+
+  .btn-directions {
+    display: block;
+    width: 100%;
+    padding: 9px 0;
+    background: linear-gradient(135deg, #006994, #00a0b0);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    text-align: center;
+    transition: opacity 0.15s;
+    margin-bottom: 6px;
+    letter-spacing: 0.01em;
+  }
+  .btn-directions:hover { opacity: 0.88; }
+  .btn-directions:disabled { background: #aaa; cursor: not-allowed; }
+
+  .fallback-row { display: none; gap: 6px; margin-top: 6px; }
+  .fallback-row.visible { display: flex; }
+  .btn-fallback {
+    flex: 1; padding: 7px 0; border: none; border-radius: 7px;
+    font-size: 12px; font-weight: 600; cursor: pointer; text-align: center;
+    text-decoration: none; color: #fff; transition: opacity 0.15s; display: block;
+  }
+  .btn-fallback:hover { opacity: 0.85; }
+  .btn-apple  { background: #1c1c1e; }
+  .btn-google { background: #4285F4; }
+
+  .route-status { font-size: 11px; color: #888; text-align: center; margin-top: 4px; min-height: 16px; }
+  .route-status.error { color: #e53935; }
+
+  #turn-panel {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    z-index: 1000;
+    background: #fff;
+    border-radius: 18px 18px 0 0;
+    box-shadow: 0 -4px 24px rgba(0,0,0,0.18);
+    padding-bottom: env(safe-area-inset-bottom, 0);
+    transform: translateY(100%);
+    transition: transform 0.32s cubic-bezier(0.4,0,0.2,1);
+    max-height: 52vh;
+    display: flex;
+    flex-direction: column;
+  }
+  #turn-panel.open { transform: translateY(0); }
+
+  #turn-handle { width: 36px; height: 4px; background: #ddd; border-radius: 2px; margin: 10px auto 0; flex-shrink: 0; }
+  #turn-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px 8px; flex-shrink: 0; border-bottom: 1px solid #f0f0f0; }
+  #turn-title { font-size: 15px; font-weight: 700; color: #111; }
+  #turn-meta  { font-size: 12px; color: #888; margin-top: 2px; }
+  #turn-close { background: #f0f0f0; border: none; border-radius: 50%; width: 28px; height: 28px; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #555; flex-shrink: 0; }
+  #turn-steps { overflow-y: auto; padding: 8px 0 20px; flex: 1; }
+
+  .turn-step { display: flex; align-items: flex-start; gap: 10px; padding: 8px 16px; border-bottom: 1px solid #f5f5f5; font-size: 13px; color: #222; line-height: 1.4; }
+  .turn-step:last-child { border-bottom: none; }
+  .turn-icon { font-size: 17px; flex-shrink: 0; width: 22px; text-align: center; margin-top: 1px; }
+  .turn-dist { font-size: 11px; color: #888; margin-top: 2px; }
+
+  .user-dot {
+    width: 14px; height: 14px; border-radius: 50%;
+    background: #2f80ff; border: 3px solid #fff;
+    box-shadow: 0 0 0 4px rgba(47,128,255,0.35), 0 0 0 8px rgba(47,128,255,0.12);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%,100% { box-shadow: 0 0 0 4px rgba(47,128,255,0.35), 0 0 0 8px rgba(47,128,255,0.12); }
+    50%      { box-shadow: 0 0 0 6px rgba(47,128,255,0.45), 0 0 0 14px rgba(47,128,255,0.18); }
+  }
+
+  .leaflet-control-custom button {
+    background: white; border: 2px solid rgba(0,0,0,0.2); border-radius: 4px;
+    width: 34px; height: 34px; cursor: pointer; font-size: 18px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.3); margin: 2px;
+  }
+  .leaflet-control-custom button:hover { background: #f4f4f4; }
+  .leaflet-routing-container { display: none !important; }
+</style>
 </head>
 <body>
-    <div class="welcome-badge-wrapper">
-        <div class="welcome-badge">Welcome to Culebra! 🌴🛣️</div>
+
+<div class="welcome-badge">Welcome to Culebra! 🌴 Tap any marker for directions</div>
+<div id="map"></div>
+
+<div id="turn-panel">
+  <div id="turn-handle"></div>
+  <div id="turn-header">
+    <div>
+      <div id="turn-title">Directions</div>
+      <div id="turn-meta"></div>
     </div>
-    <div id="map"></div>
+    <button id="turn-close" onclick="clearRoute()">✕</button>
+  </div>
+  <div id="turn-steps"></div>
+</div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Setup map - REPOSITIONED FOR PERFECT CENTERING
-            var map = L.map('map').setView([18.31, -65.29], 13);
+<script>
+/* ══════════════════════════════════════════════════════════════════
+   INVISIBLE 1000x1000 GRID
+   Never drawn. Snaps user GPS to a clean 16m x 8m intersection
+   before routing so route starts are stable despite GPS drift.
+══════════════════════════════════════════════════════════════════ */
+var BOUNDS   = { west: -65.365, east: -65.215, south: 18.270, north: 18.345 };
+var CELLS    = 1000;
+var CELL_LNG = (BOUNDS.east  - BOUNDS.west)  / CELLS;
+var CELL_LAT = (BOUNDS.north - BOUNDS.south) / CELLS;
 
-            var userLocation = null;
-            var userMarker = null;
-            var userAccuracyCircle = null;
-            var currentRoute = null;
+function snapToGrid(lat, lng) {
+  var col = Math.round((lng - BOUNDS.west)  / CELL_LNG);
+  var row = Math.round((BOUNDS.north - lat) / CELL_LAT);
+  col = Math.max(0, Math.min(CELLS, col));
+  row = Math.max(0, Math.min(CELLS, row));
+  return { lat: BOUNDS.north - row * CELL_LAT, lng: BOUNDS.west + col * CELL_LNG };
+}
 
-            // SATELLITE BASE LAYER
-            L.tileLayer(
-                'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-                {
-                    maxZoom: 19,
-                    attribution: 'Tiles © Esri — Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, GIS User Community'
-                }
-            ).addTo(map);
+/* ══════════════════════════════════════════════════════════════════
+   MAP
+══════════════════════════════════════════════════════════════════ */
+var map = L.map('map', { zoomControl: false }).setView([18.308, -65.290], 13);
 
-            // LOCATIONS WITH UPDATED PLAYA MELONES LINK
-            var locations = [
-                { name: "Culebra Ferry Terminal", lat: 18.301451, lng: -65.302530, type: "ferry", desc: "Our one and only Ferry Terminal, please be sure to arrive 1 hour before departure to avoid delays!" },
-                { name: "Gas Station", lat: 18.301129, lng: -65.300764, type: "gas", desc: "our only gas station!" },
-                { name: "Isla Culebrita", lat: 18.318654, lng: -65.227238, type: "beach", desc: "<img src='https://upload.wikimedia.org/wikipedia/commons/3/3f/Culebrita_Island%2C_Culebra_Island%2C_Puerto_Rico.jpg' style='width:100%;border-radius:8px;margin-bottom:8px;'><br>Welcome to Culebrita! The Caribbean's last true virgin island! From Army tanks situated in the brush, to the historic lighthouse in the middle of the island, the natural jacuzzi's on the northeast point of the island, snorkeling the reefs with turtles and rays, this is sure to be an unforgettable experience!!! Located a short 15 minute boat ride from the main island of Culebra, Culebrita offers stunning views of Saint Thomas, nearby Cayo Norte, and of course, Culebra and it's Playa Larga. Think about it, a 5 hour adventure on an unhabitated island for $60 per person!!! <br><br><b>PRO TIP:</b> Order groceries to be delivered to your water taxi before your excursion from <a href='https://www.shopculebra.com' target='_blank'>www.shopculebra.com</a>. <br><br>Book your trip today with <a href='https://www.gammyswatertours.com' target='_blank'>Gammy's Water Tours</a>!" },
-                { name: "Punta Soldado", lat: 18.281876, lng: -65.286575, type: "beach", desc: "<img src='./soldado.jpg' style='width:100%;border-radius:8px;margin-bottom:8px;'><br>Our southernmost beach, offering stunning sunset views, Vieques, and sometimes you can see Saint Croix in the distance! Make sure you have a Jeep, Bronco, or E-Bike! Golf Carts are strictly prohibited here as the road leading down to the beach is steep, rocky and unpaved. If you go with an E-Bike, make sure to grab one from <a href='https://www.todoculebra.com' target='_blank'>www.todoculebra.com</a>" },
-                { name: "Playa Datiles", lat: 18.296597, lng: -65.300179, type: "beach", desc: "Most romantic beach in the Caribbean! Stellar views of Cayo Luis Peña, Vieques, and El Yunque on the main Island!<br><br>Make sure to rent a Jeep, a Bronco, or an E-Bike, as the terrain is unpaved, steep, has ruts and requires 4x4 or a capable E-Bike/E-Moped, such as those from <a href='https://www.todoculebra.com' target='_blank'>www.todoculebra.com</a>." },
-                { name: "Playa Melones", lat: 18.303469, lng: -65.310197, type: "beach", desc: "Marine reserve reef snorkeling (fish everywhere!), turtles, rays, island views.<br><br><a href='https://www.snorkelwithlocals.com' target='_blank'>www.snorkelwithlocals.com</a>" },
-                { name: "Playa Zoni", lat: 18.319636, lng: -65.254862, type: "beach", desc: "A beautiful 15 minute drive from town, offering stunning views of Culebrita, Cayo Norte, and even Saint Thomas!! Beautiful walking beach with a wonderful secluded vibe." },
-                { name: "Playa Flamenco", lat: 18.331667, lng: -65.318056, type: "beach", desc: "Consistently voted one of the world's best beaches, WW2 tanks, white sands, crystal clear water, this is the premier Culebra destination" },
-                { name: "Hector El Protector", lat: 18.300682, lng: -65.302170, type: "hector", desc: "<img src='https://www.discoverpuertorico.com/sites/default/files/listing_images/profile/8059/Hector-El-Protector_69BCB335-5056-A36A-080F2CD5E9C0A166-69bcb26d5056a36_69bcb61d-5056-a36a-0867dfd14ace9c20.jpg' style='width:100%; border-radius:5px; margin-bottom:8px;'><br>Hector the Protector, our beloved guardian, protector of the island, and bringer of safe passage for those coming or going. Constructed in 2014 by Thomas Dambo, and reconstructed by locals in 2017 after Hurricane Maria, this is his 4th troll, his most famous include those in Seattle, and Amsterdam. Visit Hector today!" }
-            ];
+L.tileLayer(
+  'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+  { maxZoom: 19, attribution: '© Esri' }
+).addTo(map);
 
-            // LAYER GROUPS
-            var beachesLayer = L.layerGroup();
-            var ferryLayer = L.layerGroup();
-            var hectorLayer = L.layerGroup();
+L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-            // CUSTOM GAS STATION ICON
-            var gasIcon = L.divIcon({
-                html: "⛽",
-                className: "gas-emoji-icon",
-                iconSize: [24, 24],
-                iconAnchor: [12, 24]
-            });
+var HomeBtn = L.Control.extend({
+  options: { position: 'topleft' },
+  onAdd: function() {
+    var c = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
+    c.innerHTML = '<button title="Re-center">🏠</button>';
+    c.onclick = function() { map.setView([18.308, -65.290], 13); };
+    return c;
+  }
+});
+map.addControl(new HomeBtn());
 
-            // CREATE MARKERS WITH REAL ROAD ROUTING
-            locations.forEach(function(p) {
-                var markerOptions = {};
-                if (p.type === "gas") {
-                    markerOptions.icon = gasIcon;
-                }
+/* ══════════════════════════════════════════════════════════════════
+   LOCATIONS
+══════════════════════════════════════════════════════════════════ */
+var locations = [
+  {
+    name: "Culebra Ferry Terminal",
+    lat: 18.301451, lng: -65.302530, type: "ferry", img: null,
+    desc: "Our one and only ferry terminal — arrive 1 hour before departure to avoid delays!"
+  },
+  {
+    name: "Gas Station",
+    lat: 18.301129, lng: -65.300764, type: "gas", img: null,
+    desc: "The only gas station on the island."
+  },
+  {
+    name: "Isla Culebrita",
+    lat: 18.318654, lng: -65.227238, type: "beach",
+    img: "https://upload.wikimedia.org/wikipedia/commons/3/3f/Culebrita_Island%2C_Culebra_Island%2C_Puerto_Rico.jpg",
+    desc: "The Caribbean's last true virgin island — lighthouse, natural jacuzzis, turtles & rays. 15-min boat ride. Book with <a href='https://www.gammyswatertours.com' target='_blank' style='color:#006994;'>Gammy's Water Tours</a>!"
+  },
+  {
+    name: "Punta Soldado",
+    lat: 18.281876, lng: -65.286575, type: "beach",
+    img: "./soldado.jpg",
+    desc: "Southernmost beach. Stunning sunsets & views of Vieques. 4x4 or E-Bike only — golf carts strictly prohibited."
+  },
+  {
+    name: "Playa Datiles",
+    lat: 18.296597, lng: -65.300179, type: "beach", img: null,
+    desc: "Most romantic beach in the Caribbean! Views of Cayo Luis Pena, Vieques & El Yunque. 4x4 or E-Bike required."
+  },
+  {
+    name: "Playa Melones",
+    lat: 18.303469, lng: -65.310197, type: "beach", img: null,
+    desc: "Marine reserve reef snorkeling — fish everywhere, turtles & rays. <a href='https://www.snorkelwithlocals.com' target='_blank' style='color:#006994;'>snorkelwithlocals.com</a>"
+  },
+  {
+    name: "Playa Zoni",
+    lat: 18.319636, lng: -65.254862, type: "beach", img: null,
+    desc: "Beautiful 15-min drive from town. Stunning views of Culebrita, Cayo Norte & Saint Thomas."
+  },
+  {
+    name: "Playa Flamenco",
+    lat: 18.331667, lng: -65.318056, type: "beach", img: null,
+    desc: "Consistently voted one of the world's best beaches. WW2 tanks, white sands, crystal-clear water."
+  },
+  {
+    name: "Hector El Protector",
+    lat: 18.300682, lng: -65.302170, type: "hector",
+    img: "https://www.discoverpuertorico.com/sites/default/files/listing_images/profile/8059/Hector-El-Protector_69BCB335-5056-A36A-080F2CD5E9C0A166-69bcb26d5056a36_69bcb61d-5056-a36a-0867dfd14ace9c20.jpg",
+    desc: "Our beloved guardian troll, rebuilt by locals after Hurricane Maria. By Thomas Dambo (2014)."
+  }
+];
 
-                var popupHtml = "<b>" + p.name + "</b><br>" + p.desc +
-                    "<div class='directions-panel' id='directions-panel'>" +
-                        "<div class='directions-header'>🚗 Road Route from your location</div>" +
-                        "<div id='route-info' style='font-size:13px;color:#333;'>🔵 Locating you...</div>" +
-                        "<div class='route-line' id='route-line'></div>" +
-                    "</div>" +
-                    "<button class='directions-btn' id='toggle-directions'>Get Road Route</button>";
+/* ══════════════════════════════════════════════════════════════════
+   STATE
+══════════════════════════════════════════════════════════════════ */
+var userLat       = null;
+var userLng       = null;
+var userMarker    = null;
+var userAccCircle = null;
+var activeRoute   = null;
+var watchId       = null;
 
-                var marker = L.marker([p.lat, p.lng], markerOptions).bindPopup(popupHtml, { maxWidth: 360 });
+function clearRoute() {
+  if (activeRoute) { map.removeControl(activeRoute); activeRoute = null; }
+  document.getElementById('turn-panel').classList.remove('open');
+}
 
-                if (p.type === "beach") marker.addTo(beachesLayer);
-                else if (p.type === "ferry") marker.addTo(ferryLayer);
-                else if (p.type === "hector") marker.addTo(hectorLayer);
-                else if (p.type === "gas") marker.addTo(ferryLayer);
+/* ══════════════════════════════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════════════════════════════ */
+function turnIcon(type, modifier) {
+  var t = ((type || '') + ' ' + (modifier || '')).toLowerCase();
+  if (t.includes('depart'))    return '🚀';
+  if (t.includes('arrive'))    return '📍';
+  if (t.includes('roundabout')) return '🔄';
+  if (t.includes('sharp left')) return '↰';
+  if (t.includes('left'))      return '⬅️';
+  if (t.includes('sharp right')) return '↱';
+  if (t.includes('right'))     return '➡️';
+  if (t.includes('straight') || t.includes('continue')) return '⬆️';
+  if (t.includes('uturn'))     return '↩️';
+  return '⬆️';
+}
+function fmtDist(m) {
+  if (m == null) return '';
+  return m >= 1000 ? (m / 1000).toFixed(1) + ' km' : Math.round(m) + ' m';
+}
+function fmtTime(s) {
+  if (s == null) return '';
+  var m = Math.round(s / 60);
+  return m < 60 ? m + ' min' : Math.floor(m/60) + ' h ' + (m%60) + ' min';
+}
 
-                marker.on('popupopen', function(e) {
-                    var popupEl = e.popup.getElement();
-                    if (!popupEl) return;
-                    
-                    var toggleBtn = popupEl.querySelector('#toggle-directions');
-                    var panel = popupEl.querySelector('#directions-panel');
-                    var routeInfo = popupEl.querySelector('#route-info');
-                    var routeLine = popupEl.querySelector('#route-line');
-                    
-                    var destLat = parseFloat(p.lat);
-                    var destLng = parseFloat(p.lng);
-                    var destLatLng = L.latLng(destLat, destLng);
+/* ══════════════════════════════════════════════════════════════════
+   ROUTING
+   1. Snap GPS to invisible grid point
+   2. OSRM route → blue line + turn-by-turn drawer
+   3. On failure only: show Apple/Google Maps links
+══════════════════════════════════════════════════════════════════ */
+function requestRoute(destName, destLat, destLng, statusEl, fallbackEl, btnEl) {
+  if (userLat === null) {
+    statusEl.textContent = '📍 Location not available — please allow location access.';
+    statusEl.className = 'route-status error';
+    return;
+  }
 
-                    toggleBtn.addEventListener('click', function() {
-                        if (panel.style.display === 'none' || panel.style.display === '') {
-                            if (!userLocation) {
-                                routeInfo.innerHTML = "🔵 Locating you...";
-                                panel.style.display = 'block';
-                                return;
-                            }
+  var snapped = snapToGrid(userLat, userLng);
+  clearRoute();
 
-                            // Clear previous route
-                            if (currentRoute) {
-                                map.removeControl(currentRoute);
-                                currentRoute = null;
-                            }
+  btnEl.disabled = true;
+  btnEl.textContent = 'Finding route…';
+  statusEl.textContent = '';
+  statusEl.className = 'route-status';
+  fallbackEl.classList.remove('visible');
 
-                            // Show loading
-                            toggleBtn.textContent = 'Loading Road Route...';
-                            toggleBtn.classList.add('loading');
-                            routeInfo.innerHTML = 'Finding best road route...';
+  activeRoute = L.Routing.control({
+    waypoints: [
+      L.latLng(snapped.lat, snapped.lng),
+      L.latLng(destLat, destLng)
+    ],
+    routeWhileDragging: false,
+    show: false,
+    addWaypoints: false,
+    draggableWaypoints: false,
+    createMarker: function() { return null; },
+    lineOptions: {
+      styles: [
+        { color: '#ffffff', weight: 9, opacity: 0.35 },
+        { color: '#007AFF', weight: 5, opacity: 1.0  }
+      ],
+      extendToWaypoints: true,
+      missingRouteTolerance: 0
+    },
+    router: L.Routing.osrmv1({
+      serviceUrl: 'https://router.project-osrm.org/route/v1',
+      profile: 'driving',
+      timeout: 12000
+    })
+  }).addTo(map);
 
-                            // CREATE REAL ROAD ROUTING
-                            var startLatLng = L.latLng(userLocation.lat, userLocation.lng);
-                            
-                            currentRoute = L.Routing.control({
-                                waypoints: [startLatLng, destLatLng],
-                                routeWhileDragging: false,
-                                show: false,
-                                addWaypoints: false,
-                                draggableWaypoints: false,
-                                createMarker: function() { return null; },
-                                lineOptions: {
-                                    styles: [{
-                                        color: '#2f80ff',
-                                        weight: 8,
-                                        opacity: 0.9
-                                    }]
-                                },
-                                router: L.Routing.osrmv1({
-                                    serviceUrl: 'https://router.project-osrm.org/route/v1',
-                                    profile: 'driving',
-                                    timeout: 10000
-                                })
-                            }).addTo(map);
+  activeRoute.on('routesfound', function(e) {
+    var route = e.routes[0];
+    var dist  = route.summary.totalDistance;
+    var time  = route.summary.totalTime;
+    var steps = route.instructions || [];
 
-                            currentRoute.on('routesfound', function(e) {
-                                var route = e.routes[0];
-                                var distance = (route.summary.totalDistance / 1000).toFixed(1);
-                                var time = Math.round(route.summary.totalTime / 60);
-                                
-                                routeInfo.innerHTML = `
-                                    <div class='route-info-row'>
-                                        <span>Distance:</span> 
-                                        <span style='font-weight:600;color:#2f80ff;'>${distance} km</span>
-                                    </div>
-                                    <div class='route-info-row'>
-                                        <span>Est. Time:</span> 
-                                        <span style='font-weight:600;color:#2f80ff;'>${time} min</span>
-                                    </div>
-                                `;
-                                
-                                routeLine.style.display = 'block';
-                                panel.style.display = 'block';
-                                toggleBtn.textContent = 'Clear Road Route';
-                                toggleBtn.classList.remove('loading');
-                                
-                                map.fitBounds(route.bounds, { padding: [20, 20] });
-                            });
+    btnEl.disabled = false;
+    btnEl.textContent = '↑ View turn-by-turn';
+    statusEl.textContent = fmtDist(dist) + '  ·  ' + fmtTime(time);
+    statusEl.className = 'route-status';
 
-                            currentRoute.on('routingerror', function() {
-                                routeInfo.innerHTML = "⚠️ No direct road route available";
-                                panel.style.display = 'block';
-                                toggleBtn.textContent = 'Try Straight Line';
-                                toggleBtn.classList.remove('loading');
-                            });
+    document.getElementById('turn-title').textContent = '→ ' + destName;
+    document.getElementById('turn-meta').textContent  = fmtDist(dist) + '  ·  ' + fmtTime(time);
 
-                        } else {
-                            // Hide route
-                            if (currentRoute) {
-                                map.removeControl(currentRoute);
-                                currentRoute = null;
-                            }
-                            panel.style.display = 'none';
-                            routeLine.style.display = 'none';
-                            toggleBtn.textContent = 'Get Road Route';
-                            toggleBtn.classList.remove('loading');
-                        }
-                    });
-                });
-            });
+    var stepsEl = document.getElementById('turn-steps');
+    stepsEl.innerHTML = '';
+    steps.forEach(function(step) {
+      var row = document.createElement('div');
+      row.className = 'turn-step';
+      var ico = document.createElement('div');
+      ico.className = 'turn-icon';
+      ico.textContent = turnIcon(step.type, step.modifier);
+      var txt = document.createElement('div');
+      txt.innerHTML = '<div>' + (step.text || '') + '</div>' +
+        (step.distance > 0 ? '<div class="turn-dist">' + fmtDist(step.distance) + '</div>' : '');
+      row.appendChild(ico);
+      row.appendChild(txt);
+      stepsEl.appendChild(row);
+    });
 
-            // ADD ALL LAYERS BY DEFAULT
-            beachesLayer.addTo(map);
-            ferryLayer.addTo(map);
-            hectorLayer.addTo(map);
+    document.getElementById('turn-panel').classList.add('open');
+    map.closePopup();
+    map.fitBounds(route.bounds, { padding: [30, 30], paddingBottomRight: [30, 240] });
+  });
 
-            // LEGEND CONTROL (UNCHANGED)
-            var LegendControl = L.Control.extend({
-                options: { position: 'topleft' },
-                onAdd: function(map) {
-                    var container = L.DomUtil.create('div', 'leaflet-bar legend-control');
-                    container.innerHTML = '' +
-                        '<button type="button" class="legend-toggle-button">' +
-                            '<span>Legend</span>' +
-                            '<span class="legend-toggle-icon">▼</span>' +
-                        '</button>' +
-                        '<div class="legend-panel">' +
-                            '<div class="legend-title">Filter locations</div>' +
-                            '<div class="legend-button-group">' +
-                                '<button type="button" class="legend-button active" data-category="all">All locations</button>' +
-                                '<button type="button" class="legend-button" data-category="beach">Beaches</button>' +
-                                '<button type="button" class="legend-button" data-category="ferry">Ferry + Gas</button>' +
-                                '<button type="button" class="legend-button" data-category="hector">Hector El Protector</button>' +
-                            '</div>' +
-                        '</div>';
-                    L.DomEvent.disableClickPropagation(container);
+  activeRoute.on('routingerror', function() {
+    map.removeControl(activeRoute);
+    activeRoute = null;
+    btnEl.disabled = false;
+    btnEl.textContent = '🗺 Get Directions';
+    statusEl.textContent = '⚠️ No in-map route found. Open in external maps:';
+    statusEl.className = 'route-status error';
+    fallbackEl.querySelector('.btn-apple').href =
+      'maps://maps.apple.com/?saddr=' + userLat + ',' + userLng +
+      '&daddr=' + destLat + ',' + destLng + '&dirflg=d';
+    fallbackEl.querySelector('.btn-google').href =
+      'https://www.google.com/maps/dir/?api=1&origin=' + userLat + ',' + userLng +
+      '&destination=' + destLat + ',' + destLng + '&travelmode=driving';
+    fallbackEl.classList.add('visible');
+  });
+}
 
-                    var toggleButton = container.querySelector('.legend-toggle-button');
-                    var toggleIcon = container.querySelector('.legend-toggle-icon');
-                    var panel = container.querySelector('.legend-panel');
-                    var buttons = container.querySelectorAll('.legend-button');
+/* ══════════════════════════════════════════════════════════════════
+   MARKERS
+══════════════════════════════════════════════════════════════════ */
+var typeEmoji = { beach: '🏖', ferry: '⛴', gas: '⛽', hector: '🧌' };
 
-                    function setActive(category) {
-                        buttons.forEach(function(btn) {
-                            btn.classList.toggle('active', btn.getAttribute('data-category') === category);
-                        });
-                        if (category === 'all') {
-                            map.addLayer(beachesLayer);
-                            map.addLayer(ferryLayer);
-                            map.addLayer(hectorLayer);
-                        } else if (category === 'beach') {
-                            map.addLayer(beachesLayer); map.removeLayer(ferryLayer); map.removeLayer(hectorLayer);
-                        } else if (category === 'ferry') {
-                            map.removeLayer(beachesLayer); map.addLayer(ferryLayer); map.removeLayer(hectorLayer);
-                        } else if (category === 'hector') {
-                            map.removeLayer(beachesLayer); map.removeLayer(ferryLayer); map.addLayer(hectorLayer);
-                        }
-                    }
+locations.forEach(function(p) {
+  var emoji = typeEmoji[p.type] || '📍';
+  var icon = L.divIcon({
+    html: '<div style="font-size:24px;line-height:1;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.6));">' + emoji + '</div>',
+    className: '', iconSize: [28,28], iconAnchor: [14,28]
+  });
 
-                    toggleButton.addEventListener('click', function() {
-                        var isOpen = panel.classList.contains('open');
-                        panel.classList.toggle('open', !isOpen);
-                        toggleIcon.textContent = isOpen ? '▼' : '▲';
-                    });
+  var imgHtml = p.img
+    ? '<img class="popup-img" src="' + p.img + '" onerror="this.style.display=\'none\'" alt="">'
+    : '';
 
-                    buttons.forEach(function(btn) {
-                        btn.addEventListener('click', function() {
-                            setActive(btn.getAttribute('data-category'));
-                        });
-                    });
+  var popup =
+    imgHtml +
+    '<div class="popup-body">' +
+      '<div class="popup-title">' + p.name + '</div>' +
+      '<div class="popup-desc">'  + p.desc  + '</div>' +
+      '<button class="btn-directions">🗺 Get Directions</button>' +
+      '<div class="route-status"></div>' +
+      '<div class="fallback-row">' +
+        '<a class="btn-fallback btn-apple"  href="#" target="_blank">🍎 Apple Maps</a>' +
+        '<a class="btn-fallback btn-google" href="#" target="_blank">🗺 Google Maps</a>' +
+      '</div>' +
+    '</div>';
 
-                    setActive('all');
-                    return container;
-                }
-            });
-            map.addControl(new LegendControl());
+  var marker = L.marker([p.lat, p.lng], { icon: icon })
+    .bindPopup(popup, { maxWidth: 310, minWidth: 250 });
 
-            // CONTROLS
-            // ENHANCED SEARCH WITH AUTOSUGGEST FOR CULEBRA LOCATIONS
-            var geocoder = L.Control.geocoder({
-                defaultMarkGeocode: true,
-                placeholder: "Search Culebra beaches, ferry, gas...",
-                errorMessage: "Location not found",
-                geocoder: new L.Control.Geocoder.Nominatim({
-                    geocodingQueryParams: {
-                        viewbox: '-65.32,18.28,-65.25,18.34', // Culebra bounding box
-                        bounded: 1
-                    }
-                })
-            }).addTo(map);
+  marker.on('popupopen', function(e) {
+    var el         = e.popup.getElement();
+    var btn        = el.querySelector('.btn-directions');
+    var statusEl   = el.querySelector('.route-status');
+    var fallbackEl = el.querySelector('.fallback-row');
 
-            var HomeBtn = L.Control.extend({
-                options: { position: 'topleft' },
-                onAdd: function(map) {
-                    var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
-                    container.innerHTML = '<button type="button" title="Re-center on Culebra">🏠</button>';
-                    container.onclick = function(){ map.setView([18.31, -65.29], 13); }; // REPOSITIONED HOME BUTTON
-                    return container;
-                }
-            });
-            map.addControl(new HomeBtn());
+    btn.disabled = false;
+    btn.textContent = '🗺 Get Directions';
+    statusEl.textContent = '';
+    statusEl.className = 'route-status';
+    fallbackEl.classList.remove('visible');
 
-            var FSBtn = L.Control.extend({
-                options: { position: 'topleft' },
-                onAdd: function(map) {
-                    var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
-                    container.innerHTML = '<button type="button" title="Toggle Fullscreen">↕️</button>';
-                    container.onclick = function(){
-                        var elem = document.getElementById("map");
-                        if (!document.fullscreenElement) elem.requestFullscreen(); 
-                        else document.exitFullscreen();
-                    };
-                    return container;
-                }
-            });
-            map.addControl(new FSBtn());
+    btn.addEventListener('click', function() {
+      requestRoute(p.name, p.lat, p.lng, statusEl, fallbackEl, btn);
+    });
+  });
 
-            // GLOWING BLUE DOT - LIVE TRACKING
-            if ("geolocation" in navigator) {
-                navigator.geolocation.watchPosition(
-                    function(position) {
-                        userLocation = {
-                            lat: position.coords.latitude,
-                            lng: position.coords.longitude
-                        };
-                        var latlng = [userLocation.lat, userLocation.lng];
-                        if (!userMarker) {
-                            userMarker = L.marker(latlng, {
-                                icon: L.divIcon({
-                                    className: 'user-location-dot',
-                                    iconSize: [16, 16],
-                                    iconAnchor: [8, 8]
-                                })
-                            }).addTo(map);
-                        } else {
-                            userMarker.setLatLng(latlng);
-                        }
-                        var accuracy = position.coords.accuracy;
-                        if (!userAccuracyCircle) {
-                            userAccuracyCircle = L.circle(latlng, {
-                                radius: accuracy,
-                                color: '#2f80ff',
-                                fillColor: '#2f80ff',
-                                fillOpacity: 0.1,
-                                weight: 1,
-                                opacity: 0.6
-                            }).addTo(map);
-                        } else {
-                            userAccuracyCircle.setLatLng(latlng);
-                            userAccuracyCircle.setRadius(accuracy);
-                        }
-                    },
-                    function(error) {
-                        console.warn("Geolocation error:", error.message);
-                    },
-                    {
-                        enableHighAccuracy: true,
-                        maximumAge: 5000,
-                        timeout: 10000
-                    }
-                );
-            }
+  marker.addTo(map);
+});
 
-            setTimeout(function(){ map.invalidateSize(); }, 500);
-        });
-    </script>
+/* ══════════════════════════════════════════════════════════════════
+   GEOLOCATION
+══════════════════════════════════════════════════════════════════ */
+if ('geolocation' in navigator) {
+  watchId = navigator.geolocation.watchPosition(
+    function(pos) {
+      userLat = pos.coords.latitude;
+      userLng = pos.coords.longitude;
+      var ll  = [userLat, userLng];
+
+      if (!userMarker) {
+        userMarker = L.marker(ll, {
+          icon: L.divIcon({ className: 'user-dot', iconSize:[14,14], iconAnchor:[7,7] }),
+          zIndexOffset: 1000, interactive: false
+        }).addTo(map);
+      } else {
+        userMarker.setLatLng(ll);
+      }
+
+      var acc = pos.coords.accuracy;
+      if (!userAccCircle) {
+        userAccCircle = L.circle(ll, {
+          radius: acc, color: '#2f80ff', fillColor: '#2f80ff',
+          fillOpacity: 0.07, weight: 1, opacity: 0.35, interactive: false
+        }).addTo(map);
+      } else {
+        userAccCircle.setLatLng(ll).setRadius(acc);
+      }
+    },
+    function(err) { console.warn('Geolocation:', err.message); },
+    { enableHighAccuracy: true, maximumAge: 4000, timeout: 10000 }
+  );
+}
+
+if (typeof ResizeObserver !== 'undefined') {
+  new ResizeObserver(function() { map.invalidateSize(); }).observe(document.getElementById('map'));
+} else {
+  setTimeout(function() { map.invalidateSize(); }, 300);
+}
+</script>
 </body>
 </html>
-
-

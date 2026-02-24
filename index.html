@@ -3,15 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Culebra Map</title>
+    <title>Culebra Map - COMPLETE EXPERIENCE</title>
     
-    <!-- 1. Leaflet Core -->
+    <!-- Leaflet Core -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 
-    <!-- 2. Search Bar Plugin Links (leaflet-control-geocoder) -->
-    <link rel="stylesheet" 
-          href="https://cdn.jsdelivr.net/npm/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+    <!-- Search Bar Plugin -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-control-geocoder/dist/Control.Geocoder.css" />
     <script src="https://cdn.jsdelivr.net/npm/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
 
     <style>
@@ -32,7 +31,6 @@
             background: #ddd;
         }
 
-        /* Compact "Welcome to Culebra!" banner (not full-width) */
         .welcome-badge-wrapper {
             position: absolute;
             z-index: 1000;
@@ -55,7 +53,6 @@
             white-space: nowrap;
         }
 
-        /* Style for the custom Home and Toggle buttons */
         .leaflet-control-custom button {
             background: white;
             border: 2px solid rgba(0,0,0,0.2);
@@ -68,13 +65,64 @@
             align-items: center;
             justify-content: center;
             box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+            margin: 2px;
         }
         .leaflet-control-custom button:hover { background-color: #f4f4f4; }
         
-        /* Popup text formatting */
-        .leaflet-popup-content { font-size: 14px; line-height: 1.4; }
+        .leaflet-popup-content { 
+            font-size: 14px; 
+            line-height: 1.4; 
+            max-width: 360px;
+        }
 
-        /* Legend toggle control */
+        /* DIRECTIONS PANEL STYLES */
+        .directions-panel {
+            margin-top: 8px;
+            padding: 12px;
+            background: rgba(47,128,255,0.08);
+            border-radius: 8px;
+            border-left: 4px solid #2f80ff;
+            display: none;
+        }
+        .directions-header {
+            font-weight: 600;
+            color: #006694;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        .route-info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+            font-size: 13px;
+        }
+        .route-line {
+            margin-top: 8px;
+            height: 4px;
+            background: linear-gradient(90deg, #00a0b0, #2f80ff);
+            border-radius: 2px;
+            display: none;
+            box-shadow: 0 1px 3px rgba(47,128,255,0.3);
+        }
+        .directions-btn {
+            margin-top: 8px;
+            padding: 6px 14px;
+            background: linear-gradient(135deg, #006994, #00a0b0);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.2s;
+        }
+        .directions-btn:hover {
+            background: linear-gradient(135deg, #005a80, #008c9a);
+            transform: translateY(-1px);
+        }
+
+        /* LEGEND CONTROL */
         .legend-control {
             background: transparent;
             border-radius: 6px;
@@ -83,7 +131,6 @@
             line-height: 1.4;
             min-width: 160px;
         }
-
         .legend-toggle-button {
             width: 100%;
             border: none;
@@ -99,16 +146,8 @@
             align-items: center;
             justify-content: space-between;
         }
-        .legend-toggle-button:hover {
-            background: #003a63;
-        }
-
-        .legend-toggle-icon {
-            font-size: 11px;
-            margin-left: 6px;
-        }
-
-        .legend-panel {
+        .legend-toggle-button:hover { background: #003a63; }
+        .legend-panel { 
             margin-top: 4px;
             background: #0b2540;
             color: #ffffff;
@@ -116,23 +155,9 @@
             padding: 8px 10px;
             display: none;
         }
-
-        .legend-panel.open {
-            display: block;
-        }
-
-        .legend-title {
-            font-weight: 600;
-            margin-bottom: 6px;
-            font-size: 13px;
-        }
-
-        .legend-button-group {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
+        .legend-panel.open { display: block; }
+        .legend-title { font-weight: 600; margin-bottom: 6px; font-size: 13px; }
+        .legend-button-group { display: flex; flex-direction: column; gap: 4px; }
         .legend-button {
             border: 1px solid rgba(255,255,255,0.3);
             background: rgba(255,255,255,0.06);
@@ -142,43 +167,49 @@
             text-align: left;
             font-size: 12px;
             color: #ffffff;
-            transition: background 0.15s, border-color 0.15s;
+            transition: all 0.15s;
         }
-
         .legend-button:hover {
             background: rgba(255,255,255,0.16);
             border-color: rgba(255,255,255,0.7);
         }
-
         .legend-button.active {
             background: #ffffff;
             color: #0b2540;
             border-color: #ffffff;
         }
 
-        /* Gas emoji icon styling */
         .gas-emoji-icon {
             font-size: 24px;
             line-height: 24px;
             text-align: center;
         }
 
-        /* Blue dot for user location */
+        /* GLOWING BLUE DOT - Apple Maps Style */
         .user-location-dot {
-            width: 14px;
-            height: 14px;
+            width: 16px;
+            height: 16px;
             border-radius: 50%;
             background: #2f80ff;
             border: 3px solid #ffffff;
-            box-shadow: 0 0 0 4px rgba(47,128,255,0.5);
+            box-shadow: 
+                0 0 0 4px rgba(47,128,255,0.4),
+                0 0 0 8px rgba(47,128,255,0.2),
+                0 0 0 12px rgba(47,128,255,0.1),
+                inset 0 2px 0 rgba(255,255,255,0.6);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 4px rgba(47,128,255,0.4), 0 0 0 8px rgba(47,128,255,0.2), 0 0 0 12px rgba(47,128,255,0.1), inset 0 2px 0 rgba(255,255,255,0.6); }
+            50% { box-shadow: 0 0 0 6px rgba(47,128,255,0.5), 0 0 0 12px rgba(47,128,255,0.3), 0 0 0 18px rgba(47,128,255,0.15), inset 0 2px 0 rgba(255,255,255,0.6); }
+            100% { box-shadow: 0 0 0 4px rgba(47,128,255,0.4), 0 0 0 8px rgba(47,128,255,0.2), 0 0 0 12px rgba(47,128,255,0.1), inset 0 2px 0 rgba(255,255,255,0.6); }
         }
     </style>
 </head>
 <body>
 
-    <!-- Compact welcome badge over the map -->
     <div class="welcome-badge-wrapper">
-        <div class="welcome-badge">Welcome to Culebra!</div>
+        <div class="welcome-badge">Welcome to Culebra! 🌴</div>
     </div>
 
     <div id="map"></div>
@@ -188,95 +219,40 @@
             // Setup map
             var map = L.map('map').setView([18.31, -65.30], 13);
 
-            // Track user location globally
+            // Global variables
             var userLocation = null;
             var userMarker = null;
             var userAccuracyCircle = null;
+            var currentRoute = null;
 
-            // SATELLITE BASE LAYER (Esri World Imagery)
+            // SATELLITE BASE LAYER
             L.tileLayer(
                 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
                 {
                     maxZoom: 19,
-                    attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, ' +
-                                 'AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, ' +
-                                 'and the GIS User Community'
+                    attribution: 'Tiles © Esri — Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, GIS User Community'
                 }
             ).addTo(map);
 
-            // Locations with category type for legend/layer toggles
+            // ALL LOCATIONS WITH CATEGORIES
             var locations = [
-                { 
-                    name: "Culebra Ferry Terminal", 
-                    lat: 18.301451, 
-                    lng: -65.302530, 
-                    type: "ferry",
-                    desc: "Our one and only Ferry Terminal, please be sure to arrive 1 hour before departure to avoid delays!",
-                },
-                { 
-                    name: "Gas Station",
-                    lat: 18.301129,
-                    lng: -65.300764,
-                    type: "gas",
-                    desc: "our only gas station!"
-                },
-                { 
-                    name: "Isla Culebrita", 
-                    lat: 18.318654, 
-                    lng: -65.227238, 
-                    type: "beach",
-                    desc: "<img src='https://upload.wikimedia.org/wikipedia/commons/3/3f/Culebrita_Island%2C_Culebra_Island%2C_Puerto_Rico.jpg' style='width:100%;border-radius:8px;margin-bottom:8px;'><br>Welcome to Culebrita! The Caribbean's last true virgin island! From Army tanks situated in the brush, to the historic lighthouse in the middle of the island, the natural jacuzzi's on the northeast point of the island, snorkeling the reefs with turtles and rays, this is sure to be an unforgettable experience!!! Located a short 15 minute boat ride from the main island of Culebra, Culebrita offers stunning views of Saint Thomas, nearby Cayo Norte, and of course, Culebra and it's Playa Larga. Think about it, a 5 hour adventure on an unhabitated island for $60 per person!!! <br><br><b>PRO TIP:</b> Order groceries to be delivered to your water taxi before your excursion from <a href='https://www.shopculebra.com' target='_blank'>www.shopculebra.com</a>. <br><br>Book your trip today with <a href='https://www.gammyswatertours.com' target='_blank'>Gammy's Water Tours</a>!" 
-                },
-                { 
-                    name: "Punta Soldado", 
-                    lat: 18.281876, 
-                    lng: -65.286575, 
-                    type: "beach",
-                    desc: "<img src='./soldado.jpg' style='width:100%;border-radius:8px;margin-bottom:8px;'><br>Our southernmost beach, offering stunning sunset views, Vieques, and sometimes you can see Saint Croix in the distance! Make sure you have a Jeep, Bronco, or E-Bike! Golf Carts are strictly prohibited here as the road leading down to the beach is steep, rocky and unpaved. If you go with an E-Bike, make sure to grab one from <a href='https://www.todoculebra.com' target='_blank'>www.todoculebra.com</a>" 
-                },
-                { 
-                    name: "Playa Datiles", 
-                    lat: 18.296597, 
-                    lng: -65.300179, 
-                    type: "beach",
-                    desc: "Most romantic beach in the Caribbean! Stellar views of Cayo Luis Peña, Vieques, and El Yunque on the main Island!<br><br>Make sure to rent a Jeep, a Bronco, or an E-Bike, as the terrain is unpaved, steep, has ruts and requires 4x4 or a capable E-Bike/E-Moped, such as those from <a href='https://www.todoculebra.com' target='_blank'>www.todoculebra.com</a>." 
-                },
-                { 
-                    name: "Playa Melones", 
-                    lat: 18.303469, 
-                    lng: -65.310197, 
-                    type: "beach",
-                    desc: "Marine reserve reef snorkeling (fish everywhere!), turtles, rays, island views.<br><br><a href='https://bluewatercharters.com' target='_blank'>bluewatercharters.com</a>" 
-                },
-                { 
-                    name: "Playa Zoni", 
-                    lat: 18.319636, 
-                    lng: -65.254862, 
-                    type: "beach",
-                    desc: "A beautiful 15 minute drive from town, offering stunning views of Culebrita, Cayo Norte, and even Saint Thomas!! Beautiful walking beach with a wonderful secluded vibe." 
-                },
-                { 
-                    name: "Playa Flamenco", 
-                    lat: 18.331667, 
-                    lng: -65.318056, 
-                    type: "beach",
-                    desc: "Consistently voted one of the world's best beaches, WW2 tanks, white sands, crystal clear water, this is the premier Culebra destination" 
-                },
-                { 
-                    name: "Hector El Protector", 
-                    lat: 18.300682, 
-                    lng: -65.302170, 
-                    type: "hector",
-                    desc: "<img src='https://www.discoverpuertorico.com/sites/default/files/listing_images/profile/8059/Hector-El-Protector_69BCB335-5056-A36A-080F2CD5E9C0A166-69bcb26d5056a36_69bcb61d-5056-a36a-0867dfd14ace9c20.jpg' style='width:100%; border-radius:5px; margin-bottom:8px;'><br>Hector the Protector, our beloved guardian, protector of the island, and bringer of safe passage for those coming or going. Constructed in 2014 by Thomas Dambo, and reconstructed by locals in 2017 after Hurricane Maria, this is his 4th troll, his most famous include those in Seattle, and Amsterdam. Visit Hector today!" 
-                }
+                { name: "Culebra Ferry Terminal", lat: 18.301451, lng: -65.302530, type: "ferry", desc: "Our one and only Ferry Terminal, please be sure to arrive 1 hour before departure to avoid delays!" },
+                { name: "Gas Station", lat: 18.301129, lng: -65.300764, type: "gas", desc: "our only gas station!" },
+                { name: "Isla Culebrita", lat: 18.318654, lng: -65.227238, type: "beach", desc: "<img src='https://upload.wikimedia.org/wikipedia/commons/3/3f/Culebrita_Island%2C_Culebra_Island%2C_Puerto_Rico.jpg' style='width:100%;border-radius:8px;margin-bottom:8px;'><br>Welcome to Culebrita! The Caribbean's last true virgin island! From Army tanks situated in the brush, to the historic lighthouse in the middle of the island, the natural jacuzzi's on the northeast point of the island, snorkeling the reefs with turtles and rays, this is sure to be an unforgettable experience!!! Located a short 15 minute boat ride from the main island of Culebra, Culebrita offers stunning views of Saint Thomas, nearby Cayo Norte, and of course, Culebra and it's Playa Larga. Think about it, a 5 hour adventure on an unhabitated island for $60 per person!!! <br><br><b>PRO TIP:</b> Order groceries to be delivered to your water taxi before your excursion from <a href='https://www.shopculebra.com' target='_blank'>www.shopculebra.com</a>. <br><br>Book your trip today with <a href='https://www.gammyswatertours.com' target='_blank'>Gammy's Water Tours</a>!" },
+                { name: "Punta Soldado", lat: 18.281876, lng: -65.286575, type: "beach", desc: "<img src='./soldado.jpg' style='width:100%;border-radius:8px;margin-bottom:8px;'><br>Our southernmost beach, offering stunning sunset views, Vieques, and sometimes you can see Saint Croix in the distance! Make sure you have a Jeep, Bronco, or E-Bike! Golf Carts are strictly prohibited here as the road leading down to the beach is steep, rocky and unpaved. If you go with an E-Bike, make sure to grab one from <a href='https://www.todoculebra.com' target='_blank'>www.todoculebra.com</a>" },
+                { name: "Playa Datiles", lat: 18.296597, lng: -65.300179, type: "beach", desc: "Most romantic beach in the Caribbean! Stellar views of Cayo Luis Peña, Vieques, and El Yunque on the main Island!<br><br>Make sure to rent a Jeep, a Bronco, or an E-Bike, as the terrain is unpaved, steep, has ruts and requires 4x4 or a capable E-Bike/E-Moped, such as those from <a href='https://www.todoculebra.com' target='_blank'>www.todoculebra.com</a>." },
+                { name: "Playa Melones", lat: 18.303469, lng: -65.310197, type: "beach", desc: "Marine reserve reef snorkeling (fish everywhere!), turtles, rays, island views.<br><br><a href='https://bluewatercharters.com' target='_blank'>bluewatercharters.com</a>" },
+                { name: "Playa Zoni", lat: 18.319636, lng: -65.254862, type: "beach", desc: "A beautiful 15 minute drive from town, offering stunning views of Culebrita, Cayo Norte, and even Saint Thomas!! Beautiful walking beach with a wonderful secluded vibe." },
+                { name: "Playa Flamenco", lat: 18.331667, lng: -65.318056, type: "beach", desc: "Consistently voted one of the world's best beaches, WW2 tanks, white sands, crystal clear water, this is the premier Culebra destination" },
+                { name: "Hector El Protector", lat: 18.300682, lng: -65.302170, type: "hector", desc: "<img src='https://www.discoverpuertorico.com/sites/default/files/listing_images/profile/8059/Hector-El-Protector_69BCB335-5056-A36A-080F2CD5E9C0A166-69bcb26d5056a36_69bcb61d-5056-a36a-0867dfd14ace9c20.jpg' style='width:100%; border-radius:5px; margin-bottom:8px;'><br>Hector the Protector, our beloved guardian, protector of the island, and bringer of safe passage for those coming or going. Constructed in 2014 by Thomas Dambo, and reconstructed by locals in 2017 after Hurricane Maria, this is his 4th troll, his most famous include those in Seattle, and Amsterdam. Visit Hector today!" }
             ];
 
-            // --- CATEGORY LAYERS ---
+            // LAYER GROUPS
             var beachesLayer = L.layerGroup();
-            var ferryLayer   = L.layerGroup();
-            var hectorLayer  = L.layerGroup();
+            var ferryLayer = L.layerGroup();
+            var hectorLayer = L.layerGroup();
 
-            // Custom gas station emoji icon
+            // CUSTOM GAS STATION ICON
             var gasIcon = L.divIcon({
                 html: "⛽",
                 className: "gas-emoji-icon",
@@ -284,38 +260,25 @@
                 iconAnchor: [12, 24]
             });
 
-            // Helper: build a Google Maps directions URL from userLocation (if known) to dest
-            function buildDirectionsUrl(lat, lng) {
-                var base = "https://www.google.com/maps/dir/";
-                if (userLocation) {
-                    var from = userLocation.lat + "," + userLocation.lng;
-                    var to = lat + "," + lng;
-                    return base + encodeURIComponent(from) + "/" + encodeURIComponent(to);
-                } else {
-                    // Fallback: just open directions to destination; browser will ask for location
-                    var toOnly = lat + "," + lng;
-                    return base + "/" + encodeURIComponent(toOnly);
-                }
-            }
-
-            // Create markers and add them to the appropriate group
+            // CREATE MARKERS WITH FULL DIRECTIONS PANEL
             locations.forEach(function(p) {
                 var markerOptions = {};
                 if (p.type === "gas") {
                     markerOptions.icon = gasIcon;
                 }
 
-                // Add "Get directions" link into popup
+                // FULL DIRECTIONS POPUP
                 var popupHtml = "<b>" + p.name + "</b><br>" + p.desc +
-                    "<br><br><a href='#' class='directions-link' " +
-                    "data-lat='" + p.lat + "' data-lng='" + p.lng + "' " +
-                    "style='font-weight:600;color:#0066ff;text-decoration:underline;'>Get directions</a>";
+                    "<div class='directions-panel' id='directions-panel'>" +
+                        "<div class='directions-header'>📍 Route from your location</div>" +
+                        "<div id='route-info' style='font-size:13px;color:#333;'>🔵 Locating you...</div>" +
+                        "<div class='route-line' id='route-line'></div>" +
+                    "</div>" +
+                    "<button class='directions-btn' id='toggle-directions'>Show Route</button>";
 
-                var marker = L.marker([p.lat, p.lng], markerOptions).bindPopup(
-                    popupHtml,
-                    { maxWidth: 320 }
-                );
+                var marker = L.marker([p.lat, p.lng], markerOptions).bindPopup(popupHtml, { maxWidth: 360 });
 
+                // ADD TO APPROPRIATE LAYER
                 if (p.type === "beach") {
                     marker.addTo(beachesLayer);
                 } else if (p.type === "ferry") {
@@ -323,39 +286,108 @@
                 } else if (p.type === "hector") {
                     marker.addTo(hectorLayer);
                 } else if (p.type === "gas") {
-                    // Group gas with ferry filter
                     marker.addTo(ferryLayer);
                 }
 
-                // Attach click handler when popup opens to wire the directions link
+                // DIRECTIONS LOGIC
                 marker.on('popupopen', function(e) {
                     var popupEl = e.popup.getElement();
                     if (!popupEl) return;
-                    var link = popupEl.querySelector('.directions-link');
-                    if (!link) return;
-
-                    link.addEventListener('click', function(evt) {
-                        evt.preventDefault();
-                        var lat = link.getAttribute('data-lat');
-                        var lng = link.getAttribute('data-lng');
-                        var url = buildDirectionsUrl(lat, lng);
-                        window.open(url, '_blank');
-                    }, { once: true });
+                    
+                    var toggleBtn = popupEl.querySelector('#toggle-directions');
+                    var panel = popupEl.querySelector('#directions-panel');
+                    var routeInfo = popupEl.querySelector('#route-info');
+                    var routeLine = popupEl.querySelector('#route-line');
+                    
+                    var destLat = parseFloat(p.lat);
+                    var destLng = parseFloat(p.lng);
+                    
+                    function updateDirections() {
+                        if (!userLocation) {
+                            routeInfo.innerHTML = "🔵 Locating you...";
+                            panel.style.display = 'block';
+                            routeLine.style.display = 'none';
+                            return;
+                        }
+                        
+                        // DISTANCE & BEARING CALCULATION
+                        var distance = map.distance([userLocation.lat, userLocation.lng], [destLat, destLng]);
+                        var miles = (distance / 1609.34).toFixed(1);
+                        
+                        var lat1 = userLocation.lat * Math.PI / 180;
+                        var lat2 = destLat * Math.PI / 180;
+                        var dLng = (destLng - userLocation.lng) * Math.PI / 180;
+                        var y = Math.sin(dLng) * Math.cos(lat2);
+                        var x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLng);
+                        var bearing = Math.atan2(y, x) * 180 / Math.PI;
+                        bearing = (bearing + 360) % 360;
+                        
+                        var dirCardinal = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'][Math.round(bearing/45) % 8];
+                        
+                        routeInfo.innerHTML = `
+                            <div class='route-info-row'>
+                                <span>Distance:</span> 
+                                <span style='font-weight:600;color:#2f80ff;'>${miles} mi</span>
+                            </div>
+                            <div class='route-info-row'>
+                                <span>Bearing:</span> 
+                                <span style='font-weight:600;color:#2f80ff;'>${bearing.toFixed(0)}° (${dirCardinal})</span>
+                            </div>
+                        `;
+                        
+                        // VISUAL ROUTE LINE
+                        var lineWidth = Math.max(3, Math.min(10, miles * 2));
+                        routeLine.style.height = lineWidth + 'px';
+                        routeLine.style.display = 'block';
+                        
+                        // DRAW ROUTE ON MAP
+                        if (currentRoute) map.removeLayer(currentRoute);
+                        currentRoute = L.polyline([
+                            [userLocation.lat, userLocation.lng],
+                            [destLat, destLng]
+                        ], {
+                            color: '#2f80ff',
+                            weight: 6,
+                            opacity: 0.9,
+                            dashArray: '12, 6'
+                        }).addTo(map);
+                        
+                        // AUTO ZOOM TO ROUTE
+                        map.fitBounds([
+                            [userLocation.lat, userLocation.lng],
+                            [destLat, destLng]
+                        ], { padding: [20, 20] });
+                    }
+                    
+                    toggleBtn.addEventListener('click', function() {
+                        if (panel.style.display === 'none' || panel.style.display === '') {
+                            panel.style.display = 'block';
+                            toggleBtn.textContent = 'Hide Route';
+                            toggleBtn.style.background = 'linear-gradient(135deg, #d32f2f, #f44336)';
+                            updateDirections();
+                        } else {
+                            panel.style.display = 'none';
+                            toggleBtn.textContent = 'Show Route';
+                            toggleBtn.style.background = 'linear-gradient(135deg, #006994, #00a0b0)';
+                            if (currentRoute) {
+                                map.removeLayer(currentRoute);
+                                currentRoute = null;
+                            }
+                        }
+                    });
                 });
             });
 
-            // Add all layers to the map by default
+            // ADD ALL LAYERS BY DEFAULT
             beachesLayer.addTo(map);
             ferryLayer.addTo(map);
             hectorLayer.addTo(map);
 
-            // --- LEGEND-AS-A-BUTTON CONTROL ---
+            // LEGEND CONTROL (UNCHANGED)
             var LegendControl = L.Control.extend({
                 options: { position: 'topleft' },
-
                 onAdd: function(map) {
                     var container = L.DomUtil.create('div', 'leaflet-bar legend-control');
-
                     container.innerHTML = '' +
                         '<button type="button" class="legend-toggle-button">' +
                             '<span>Legend</span>' +
@@ -370,78 +402,54 @@
                                 '<button type="button" class="legend-button" data-category="hector">Hector El Protector</button>' +
                             '</div>' +
                         '</div>';
-
                     L.DomEvent.disableClickPropagation(container);
 
                     var toggleButton = container.querySelector('.legend-toggle-button');
-                    var toggleIcon   = container.querySelector('.legend-toggle-icon');
-                    var panel        = container.querySelector('.legend-panel');
-                    var buttons      = container.querySelectorAll('.legend-button');
+                    var toggleIcon = container.querySelector('.legend-toggle-icon');
+                    var panel = container.querySelector('.legend-panel');
+                    var buttons = container.querySelectorAll('.legend-button');
 
                     function setActive(category) {
                         buttons.forEach(function(btn) {
-                            if (btn.getAttribute('data-category') === category) {
-                                btn.classList.add('active');
-                            } else {
-                                btn.classList.remove('active');
-                            }
+                            btn.classList.toggle('active', btn.getAttribute('data-category') === category);
                         });
-
                         if (category === 'all') {
                             map.addLayer(beachesLayer);
                             map.addLayer(ferryLayer);
                             map.addLayer(hectorLayer);
                         } else if (category === 'beach') {
-                            map.addLayer(beachesLayer);
-                            map.removeLayer(ferryLayer);
-                            map.removeLayer(hectorLayer);
+                            map.addLayer(beachesLayer); map.removeLayer(ferryLayer); map.removeLayer(hectorLayer);
                         } else if (category === 'ferry') {
-                            map.removeLayer(beachesLayer);
-                            map.addLayer(ferryLayer);
-                            map.removeLayer(hectorLayer);
+                            map.removeLayer(beachesLayer); map.addLayer(ferryLayer); map.removeLayer(hectorLayer);
                         } else if (category === 'hector') {
-                            map.removeLayer(beachesLayer);
-                            map.removeLayer(ferryLayer);
-                            map.addLayer(hectorLayer);
+                            map.removeLayer(beachesLayer); map.removeLayer(ferryLayer); map.addLayer(hectorLayer);
                         }
                     }
 
-                    // Toggle open/closed panel
                     toggleButton.addEventListener('click', function() {
                         var isOpen = panel.classList.contains('open');
-                        if (isOpen) {
-                            panel.classList.remove('open');
-                            toggleIcon.textContent = '▼';
-                        } else {
-                            panel.classList.add('open');
-                            toggleIcon.textContent = '▲';
-                        }
+                        panel.classList.toggle('open', !isOpen);
+                        toggleIcon.textContent = isOpen ? '▼' : '▲';
                     });
 
-                    // Category buttons behavior
                     buttons.forEach(function(btn) {
                         btn.addEventListener('click', function() {
-                            var category = btn.getAttribute('data-category');
-                            setActive(category);
+                            setActive(btn.getAttribute('data-category'));
                         });
                     });
 
-                    // Initial state: all layers visible
                     setActive('all');
-
                     return container;
                 }
             });
-
             map.addControl(new LegendControl());
 
-            // 1. SEARCH BAR
+            // CONTROLS
             L.Control.geocoder({ defaultMarkGeocode: true }).addTo(map);
 
-            // 2. RE-CENTER (HOME) BUTTON
             var HomeBtn = L.Control.extend({
                 options: { position: 'topleft' },
-                onAdd: function (map) {
+                onAdd: function(map) {
                     var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
                     container.innerHTML = '<button type="button" title="Re-center Map">🏠</button>';
                     container.onclick = function(){ map.setView([18.31, -65.30], 13); };
@@ -450,23 +458,22 @@
             });
             map.addControl(new HomeBtn());
 
-            // 3. FULLSCREEN (TOGGLE) BUTTON
             var FSBtn = L.Control.extend({
                 options: { position: 'topleft' },
-                onAdd: function (map) {
+                onAdd: function(map) {
                     var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
                     container.innerHTML = '<button type="button" title="Toggle Fullscreen">↕️</button>';
                     container.onclick = function(){
                         var elem = document.getElementById("map");
-                        if (!document.fullscreenElement) { elem.requestFullscreen(); } 
-                        else { document.exitFullscreen(); }
+                        if (!document.fullscreenElement) elem.requestFullscreen(); 
+                        else document.exitFullscreen();
                     };
                     return container;
                 }
             });
             map.addControl(new FSBtn());
 
-            // --- LIVE USER LOCATION (BLUE DOT) ---
+            // GLOWING BLUE DOT - LIVE TRACKING
             if ("geolocation" in navigator) {
                 navigator.geolocation.watchPosition(
                     function(position) {
@@ -477,45 +484,46 @@
 
                         var latlng = [userLocation.lat, userLocation.lng];
 
-                        // Create or update blue dot marker
                         if (!userMarker) {
                             userMarker = L.marker(latlng, {
                                 icon: L.divIcon({
                                     className: 'user-location-dot',
-                                    iconSize: [14, 14],
-                                    iconAnchor: [7, 7]
+                                    iconSize: [16, 16],
+                                    iconAnchor: [8, 8],
+                                    html: '<div></div>'
                                 })
                             }).addTo(map);
                         } else {
                             userMarker.setLatLng(latlng);
                         }
 
-                        // Optional: accuracy circle (can comment out if you don't want it)
-                        var accuracy = position.coords.accuracy; // meters
+                        var accuracy = position.coords.accuracy;
                         if (!userAccuracyCircle) {
                             userAccuracyCircle = L.circle(latlng, {
                                 radius: accuracy,
                                 color: '#2f80ff',
                                 fillColor: '#2f80ff',
-                                fillOpacity: 0.08,
-                                weight: 1
+                                fillOpacity: 0.1,
+                                weight: 1,
+                                opacity: 0.6
                             }).addTo(map);
                         } else {
                             userAccuracyCircle.setLatLng(latlng);
                             userAccuracyCircle.setRadius(accuracy);
                         }
+
+                        // BROADCAST LOCATION UPDATE
+                        window.dispatchEvent(new CustomEvent('userlocationupdate'));
                     },
                     function(error) {
-                        console.warn("Geolocation error:", error && error.message);
+                        console.warn("Geolocation error:", error.message);
                     },
                     {
                         enableHighAccuracy: true,
-                        maximumAge: 10000,
-                        timeout: 20000
+                        maximumAge: 5000,
+                        timeout: 10000
                     }
                 );
-            } else {
-                console.warn("Geolocation not available in this browser.");
             }
 
             setTimeout(function(){ map.invalidateSize(); }, 500);

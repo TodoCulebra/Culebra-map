@@ -103,6 +103,13 @@
             color: #ffffff;
             border-color: #006994;
         }
+
+        /* Gas emoji icon styling */
+        .gas-emoji-icon {
+            font-size: 24px;
+            line-height: 24px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -135,14 +142,13 @@
                     type: "ferry",
                     desc: "Our one and only Ferry Terminal, please be sure to arrive 1 hour before departure to avoid delays!",
                 },
-                {
-    name: "Gas Station",
-    lat: 18.301129,
-    lng: -65.300764,
-    type: "gas",
-    desc: "⛽ our only gas station!"
-},
-
+                { 
+                    name: "Gas Station",
+                    lat: 18.301129,
+                    lng: -65.300764,
+                    type: "gas",
+                    desc: "our only gas station!"
+                },
                 { 
                     name: "Isla Culebrita", 
                     lat: 18.318654, 
@@ -199,24 +205,37 @@
             var ferryLayer   = L.layerGroup();
             var hectorLayer  = L.layerGroup();
 
+            // Custom gas station emoji icon
+            var gasIcon = L.divIcon({
+                html: "⛽",
+                className: "gas-emoji-icon",
+                iconSize: [24, 24],
+                iconAnchor: [12, 24]
+            });
+
             // Create markers and add them to the appropriate group
-locations.forEach(function(p) {
-    var marker = L.marker([p.lat, p.lng]).bindPopup(
-        "<b>" + p.name + "</b><br>" + p.desc,
-        { maxWidth: 320 }
-    );
+            locations.forEach(function(p) {
+                var markerOptions = {};
+                if (p.type === "gas") {
+                    markerOptions.icon = gasIcon;
+                }
 
-    if (p.type === "beach") {
-        marker.addTo(beachesLayer);
-    } else if (p.type === "ferry") {
-        marker.addTo(ferryLayer);
-    } else if (p.type === "hector") {
-        marker.addTo(hectorLayer);
-    } else if (p.type === "gas") {
-        marker.addTo(beachesLayer); // or create a separate gasLayer if you prefer
-    }
-});
+                var marker = L.marker([p.lat, p.lng], markerOptions).bindPopup(
+                    "<b>" + p.name + "</b><br>" + p.desc,
+                    { maxWidth: 320 }
+                );
 
+                if (p.type === "beach") {
+                    marker.addTo(beachesLayer);
+                } else if (p.type === "ferry") {
+                    marker.addTo(ferryLayer);
+                } else if (p.type === "hector") {
+                    marker.addTo(hectorLayer);
+                } else if (p.type === "gas") {
+                    // Group gas with ferry filter
+                    marker.addTo(ferryLayer);
+                }
+            });
 
             // Add all layers to the map by default
             beachesLayer.addTo(map);
@@ -235,7 +254,7 @@ locations.forEach(function(p) {
                         '<div class="category-button-group">' +
                             '<button type="button" class="category-button active" data-category="all">All locations</button>' +
                             '<button type="button" class="category-button" data-category="beach">Beaches</button>' +
-                            '<button type="button" class="category-button" data-category="ferry">Ferry Terminal</button>' +
+                            '<button type="button" class="category-button" data-category="ferry">Ferry + Gas</button>' +
                             '<button type="button" class="category-button" data-category="hector">Hector El Protector</button>' +
                         '</div>';
 
@@ -326,4 +345,3 @@ locations.forEach(function(p) {
     </script>
 </body>
 </html>
-

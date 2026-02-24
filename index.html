@@ -39,7 +39,7 @@
             top: 10px;
             left: 50%;
             transform: translateX(-50%);
-            pointer-events: none; /* let clicks pass through to map */
+            pointer-events: none;
         }
         .welcome-badge {
             display: inline-block;
@@ -51,7 +51,7 @@
             letter-spacing: 0.03em;
             border-radius: 999px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.25);
-            pointer-events: auto; /* still selectable if needed */
+            pointer-events: auto;
             white-space: nowrap;
         }
 
@@ -114,7 +114,7 @@
             color: #ffffff;
             border-radius: 6px;
             padding: 8px 10px;
-            display: none; /* hidden by default, toggled via JS */
+            display: none;
         }
 
         .legend-panel.open {
@@ -162,6 +162,16 @@
             line-height: 24px;
             text-align: center;
         }
+
+        /* Blue dot for user location */
+        .user-location-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #2f80ff;
+            border: 3px solid #ffffff;
+            box-shadow: 0 0 0 4px rgba(47,128,255,0.5);
+        }
     </style>
 </head>
 <body>
@@ -177,6 +187,11 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Setup map
             var map = L.map('map').setView([18.31, -65.30], 13);
+
+            // Track user location globally
+            var userLocation = null;
+            var userMarker = null;
+            var userAccuracyCircle = null;
 
             // SATELLITE BASE LAYER (Esri World Imagery)
             L.tileLayer(
@@ -269,6 +284,20 @@
                 iconAnchor: [12, 24]
             });
 
+            // Helper: build a Google Maps directions URL from userLocation (if known) to dest
+            function buildDirectionsUrl(lat, lng) {
+                var base = "https://www.google.com/maps/dir/";
+                if (userLocation) {
+                    var from = userLocation.lat + "," + userLocation.lng;
+                    var to = lat + "," + lng;
+                    return base + encodeURIComponent(from) + "/" + encodeURIComponent(to);
+                } else {
+                    // Fallback: just open directions to destination; browser will ask for location
+                    var toOnly = lat + "," + lng;
+                    return base + "/" + encodeURIComponent(toOnly);
+                }
+            }
+
             // Create markers and add them to the appropriate group
             locations.forEach(function(p) {
                 var markerOptions = {};
@@ -276,8 +305,14 @@
                     markerOptions.icon = gasIcon;
                 }
 
+                // Add "Get directions" link into popup
+                var popupHtml = "<b>" + p.name + "</b><br>" + p.desc +
+                    "<br><br><a href='#' class='directions-link' " +
+                    "data-lat='" + p.lat + "' data-lng='" + p.lng + "' " +
+                    "style='font-weight:600;color:#0066ff;text-decoration:underline;'>Get directions</a>";
+
                 var marker = L.marker([p.lat, p.lng], markerOptions).bindPopup(
-                    "<b>" + p.name + "</b><br>" + p.desc,
+                    popupHtml,
                     { maxWidth: 320 }
                 );
 
@@ -291,6 +326,22 @@
                     // Group gas with ferry filter
                     marker.addTo(ferryLayer);
                 }
+
+                // Attach click handler when popup opens to wire the directions link
+                marker.on('popupopen', function(e) {
+                    var popupEl = e.popup.getElement();
+                    if (!popupEl) return;
+                    var link = popupEl.querySelector('.directions-link');
+                    if (!link) return;
+
+                    link.addEventListener('click', function(evt) {
+                        evt.preventDefault();
+                        var lat = link.getAttribute('data-lat');
+                        var lng = link.getAttribute('data-lng');
+                        var url = buildDirectionsUrl(lat, lng);
+                        window.open(url, '_blank');
+                    }, { once: true });
+                });
             });
 
             // Add all layers to the map by default
@@ -415,9 +466,60 @@
             });
             map.addControl(new FSBtn());
 
+            // --- LIVE USER LOCATION (BLUE DOT) ---
+            if ("geolocation" in navigator) {
+                navigator.geolocation.watchPosition(
+                    function(position) {
+                        userLocation = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude
+                        };
+
+                        var latlng = [userLocation.lat, userLocation.lng];
+
+                        // Create or update blue dot marker
+                        if (!userMarker) {
+                            userMarker = L.marker(latlng, {
+                                icon: L.divIcon({
+                                    className: 'user-location-dot',
+                                    iconSize: [14, 14],
+                                    iconAnchor: [7, 7]
+                                })
+                            }).addTo(map);
+                        } else {
+                            userMarker.setLatLng(latlng);
+                        }
+
+                        // Optional: accuracy circle (can comment out if you don't want it)
+                        var accuracy = position.coords.accuracy; // meters
+                        if (!userAccuracyCircle) {
+                            userAccuracyCircle = L.circle(latlng, {
+                                radius: accuracy,
+                                color: '#2f80ff',
+                                fillColor: '#2f80ff',
+                                fillOpacity: 0.08,
+                                weight: 1
+                            }).addTo(map);
+                        } else {
+                            userAccuracyCircle.setLatLng(latlng);
+                            userAccuracyCircle.setRadius(accuracy);
+                        }
+                    },
+                    function(error) {
+                        console.warn("Geolocation error:", error && error.message);
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        maximumAge: 10000,
+                        timeout: 20000
+                    }
+                );
+            } else {
+                console.warn("Geolocation not available in this browser.");
+            }
+
             setTimeout(function(){ map.invalidateSize(); }, 500);
         });
     </script>
 </body>
 </html>
-

@@ -26,22 +26,33 @@
             font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         }
 
-        /* Top banner */
-        .top-banner {
-            background: linear-gradient(135deg, #006994, #00a0b0);
-            color: #ffffff;
-            padding: 12px 20px;
-            font-size: 20px;
-            font-weight: 600;
-            letter-spacing: 0.03em;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            text-align: center;
-        }
-
         #map {
             flex: 1;
             width: 100%;
             background: #ddd;
+        }
+
+        /* Compact "Welcome to Culebra!" banner (not full-width) */
+        .welcome-badge-wrapper {
+            position: absolute;
+            z-index: 1000;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            pointer-events: none; /* let clicks pass through to map */
+        }
+        .welcome-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #006994, #00a0b0);
+            color: #ffffff;
+            padding: 6px 14px;
+            font-size: 15px;
+            font-weight: 600;
+            letter-spacing: 0.03em;
+            border-radius: 999px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.25);
+            pointer-events: auto; /* still selectable if needed */
+            white-space: nowrap;
         }
 
         /* Style for the custom Home and Toggle buttons */
@@ -63,45 +74,86 @@
         /* Popup text formatting */
         .leaflet-popup-content { font-size: 14px; line-height: 1.4; }
 
-        /* Category toggle control */
-        .category-control {
-            background: #ffffff;
+        /* Legend toggle control */
+        .legend-control {
+            background: transparent;
             border-radius: 6px;
             box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-            padding: 8px 10px;
             font-size: 13px;
             line-height: 1.4;
-            min-width: 150px;
+            min-width: 160px;
         }
-        .category-control-title {
+
+        .legend-toggle-button {
+            width: 100%;
+            border: none;
+            background: #004a7c;
+            color: #ffffff;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .legend-toggle-button:hover {
+            background: #003a63;
+        }
+
+        .legend-toggle-icon {
+            font-size: 11px;
+            margin-left: 6px;
+        }
+
+        .legend-panel {
+            margin-top: 4px;
+            background: #0b2540;
+            color: #ffffff;
+            border-radius: 6px;
+            padding: 8px 10px;
+            display: none; /* hidden by default, toggled via JS */
+        }
+
+        .legend-panel.open {
+            display: block;
+        }
+
+        .legend-title {
             font-weight: 600;
             margin-bottom: 6px;
             font-size: 13px;
-            color: #333;
         }
-        .category-button-group {
+
+        .legend-button-group {
             display: flex;
             flex-direction: column;
             gap: 4px;
         }
-        .category-button {
-            border: 1px solid #ccc;
-            background: #f7f7f7;
+
+        .legend-button {
+            border: 1px solid rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.06);
             border-radius: 4px;
             padding: 4px 8px;
             cursor: pointer;
             text-align: left;
             font-size: 12px;
+            color: #ffffff;
             transition: background 0.15s, border-color 0.15s;
         }
-        .category-button:hover {
-            background: #ececec;
-            border-color: #999;
+
+        .legend-button:hover {
+            background: rgba(255,255,255,0.16);
+            border-color: rgba(255,255,255,0.7);
         }
-        .category-button.active {
-            background: #006994;
-            color: #ffffff;
-            border-color: #006994;
+
+        .legend-button.active {
+            background: #ffffff;
+            color: #0b2540;
+            border-color: #ffffff;
         }
 
         /* Gas emoji icon styling */
@@ -114,7 +166,11 @@
 </head>
 <body>
 
-    <div class="top-banner">Welcome to Culebra!</div>
+    <!-- Compact welcome badge over the map -->
+    <div class="welcome-badge-wrapper">
+        <div class="welcome-badge">Welcome to Culebra!</div>
+    </div>
+
     <div id="map"></div>
 
     <script>
@@ -147,7 +203,7 @@
                     lat: 18.301129,
                     lng: -65.300764,
                     type: "gas",
-                    desc: "oOur only gas station! <br><br>Closes at 7:00 pm Weekdays and Saturdays, 3:00 pm on Sundays! Sometimes it fills up quickly, make sure to arrive well before your rental drop off time to refuel, and make it back to the ferry terminal on time!!!"
+                    desc: "our only gas station!"
                 },
                 { 
                     name: "Isla Culebrita", 
@@ -242,27 +298,34 @@
             ferryLayer.addTo(map);
             hectorLayer.addTo(map);
 
-            // --- CUSTOM CATEGORY TOGGLE CONTROL ---
-            var CategoryControl = L.Control.extend({
+            // --- LEGEND-AS-A-BUTTON CONTROL ---
+            var LegendControl = L.Control.extend({
                 options: { position: 'topleft' },
 
                 onAdd: function(map) {
-                    var container = L.DomUtil.create('div', 'leaflet-bar category-control');
+                    var container = L.DomUtil.create('div', 'leaflet-bar legend-control');
 
                     container.innerHTML = '' +
-                        '<div class="category-control-title">Filter locations</div>' +
-                        '<div class="category-button-group">' +
-                            '<button type="button" class="category-button active" data-category="all">All locations</button>' +
-                            '<button type="button" class="category-button" data-category="beach">Beaches</button>' +
-                            '<button type="button" class="category-button" data-category="ferry">Ferry + Gas</button>' +
-                            '<button type="button" class="category-button" data-category="hector">Hector El Protector</button>' +
+                        '<button type="button" class="legend-toggle-button">' +
+                            '<span>Legend</span>' +
+                            '<span class="legend-toggle-icon">▼</span>' +
+                        '</button>' +
+                        '<div class="legend-panel">' +
+                            '<div class="legend-title">Filter locations</div>' +
+                            '<div class="legend-button-group">' +
+                                '<button type="button" class="legend-button active" data-category="all">All locations</button>' +
+                                '<button type="button" class="legend-button" data-category="beach">Beaches</button>' +
+                                '<button type="button" class="legend-button" data-category="ferry">Ferry + Gas</button>' +
+                                '<button type="button" class="legend-button" data-category="hector">Hector El Protector</button>' +
+                            '</div>' +
                         '</div>';
 
-                    // Prevent map drag when interacting with the control
                     L.DomEvent.disableClickPropagation(container);
 
-                    // Wire up button behavior
-                    var buttons = container.querySelectorAll('.category-button');
+                    var toggleButton = container.querySelector('.legend-toggle-button');
+                    var toggleIcon   = container.querySelector('.legend-toggle-icon');
+                    var panel        = container.querySelector('.legend-panel');
+                    var buttons      = container.querySelectorAll('.legend-button');
 
                     function setActive(category) {
                         buttons.forEach(function(btn) {
@@ -273,7 +336,6 @@
                             }
                         });
 
-                        // Show/hide layers based on category
                         if (category === 'all') {
                             map.addLayer(beachesLayer);
                             map.addLayer(ferryLayer);
@@ -293,6 +355,19 @@
                         }
                     }
 
+                    // Toggle open/closed panel
+                    toggleButton.addEventListener('click', function() {
+                        var isOpen = panel.classList.contains('open');
+                        if (isOpen) {
+                            panel.classList.remove('open');
+                            toggleIcon.textContent = '▼';
+                        } else {
+                            panel.classList.add('open');
+                            toggleIcon.textContent = '▲';
+                        }
+                    });
+
+                    // Category buttons behavior
                     buttons.forEach(function(btn) {
                         btn.addEventListener('click', function() {
                             var category = btn.getAttribute('data-category');
@@ -307,7 +382,7 @@
                 }
             });
 
-            map.addControl(new CategoryControl());
+            map.addControl(new LegendControl());
 
             // 1. SEARCH BAR
             L.Control.geocoder({ defaultMarkGeocode: true }).addTo(map);
@@ -345,3 +420,4 @@
     </script>
 </body>
 </html>
+

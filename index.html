@@ -8,6 +8,10 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" crossorigin="anonymous"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet-routing-machine/3.2.12/leaflet-routing-machine.min.css" crossorigin="anonymous"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-routing-machine/3.2.12/leaflet-routing-machine.min.js" crossorigin="anonymous"></script>
+<!-- MarkerCluster — collapses dense pins at low zoom, expands on zoom-in -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css" crossorigin="anonymous"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.css" crossorigin="anonymous"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.js" crossorigin="anonymous"></script>
 
 <style>
   *, *::before, *::after { box-sizing: border-box; }
@@ -269,6 +273,10 @@
   .leaflet-control-custom button { background: white; border: 2px solid rgba(0,0,0,0.2); border-radius: 4px; width: 34px; height: 34px; cursor: pointer; font-size: 18px; display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-align: center; -ms-flex-align: center; align-items: center; -webkit-box-pack: center; -ms-flex-pack: center; justify-content: center; box-shadow: 0 1px 5px rgba(0,0,0,0.3); margin: 2px; }
   .leaflet-control-custom button:hover { background: #f4f4f4; }
   .leaflet-routing-container { display: none !important; }
+
+  /* ── CLUSTER BADGE ── */
+  .marker-cluster { background: transparent !important; }
+  .marker-cluster div { background: transparent !important; }
 </style>
 </head>
 <body>
@@ -392,7 +400,7 @@ var locations = [
 /* ══════════════════════════════════════════════════════════════════
    MAP
 ══════════════════════════════════════════════════════════════════ */
-var map = L.map('map', { zoomControl: false }).setView([18.308, -65.290], 13);
+var map = L.map('map', { zoomControl: false }).setView([18.275, -65.460], 10);
 
 L.tileLayer(
   'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
@@ -401,13 +409,42 @@ L.tileLayer(
 
 L.control.zoom({ position: 'bottomright' }).addTo(map);
 
+/* MARKER CLUSTER GROUP
+   disableClusteringAtZoom: 14 — at zoom 14+ every pin shows individually.
+   maxClusterRadius: 60       — pins must be within 60px to cluster together.
+   The Ceiba terminal is geographically isolated so it will never cluster
+   with Culebra pins and always shows as its own standalone pin.          */
+var clusterGroup = L.markerClusterGroup({
+  disableClusteringAtZoom: 14,
+  maxClusterRadius: 60,
+  spiderfyOnMaxZoom: true,
+  showCoverageOnHover: false,
+  iconCreateFunction: function (cluster) {
+    var count = cluster.getChildCount();
+    return L.divIcon({
+      html: '<div style="' +
+        'width:38px;height:38px;border-radius:50%;' +
+        'background:linear-gradient(135deg,#006994,#00a0b0);' +
+        'border:3px solid #fff;' +
+        'box-shadow:0 2px 8px rgba(0,0,0,0.45);' +
+        'display:flex;align-items:center;justify-content:center;' +
+        'color:#fff;font-size:14px;font-weight:700;' +
+        '">' + count + '</div>',
+      className: '',
+      iconSize: [38, 38],
+      iconAnchor: [19, 19]
+    });
+  }
+});
+map.addLayer(clusterGroup);
+
 /* HOME BUTTON */
 var HomeBtn = L.Control.extend({
   options: { position: 'topleft' },
   onAdd: function () {
     var c = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
     c.innerHTML = '<button title="Re-center map">&#127968;</button>';
-    L.DomEvent.on(c, 'click', function () { map.setView([18.308, -65.290], 13); });
+    L.DomEvent.on(c, 'click', function () { map.setView([18.275, -65.460], 10); });
     L.DomEvent.disableClickPropagation(c);
     return c;
   }
@@ -515,8 +552,15 @@ function filterMarkers(type) {
   if (ab) { ab.classList.add('active'); }
 
   for (var mi = 0; mi < markerObjects.length; mi++) {
-    if (markerObjects[mi].type === type) { markerObjects[mi].marker.addTo(map); }
-    else { map.removeLayer(markerObjects[mi].marker); }
+    if (markerObjects[mi].type === type) {
+      if (!clusterGroup.hasLayer(markerObjects[mi].marker)) {
+        clusterGroup.addLayer(markerObjects[mi].marker);
+      }
+    } else {
+      if (clusterGroup.hasLayer(markerObjects[mi].marker)) {
+        clusterGroup.removeLayer(markerObjects[mi].marker);
+      }
+    }
   }
   map.closePopup();
 }
@@ -525,7 +569,11 @@ function resetFilter() {
   activeFilter = null;
   var btns = document.querySelectorAll('.legend-btn');
   for (var bi = 0; bi < btns.length; bi++) { btns[bi].classList.remove('active'); }
-  for (var mi = 0; mi < markerObjects.length; mi++) { markerObjects[mi].marker.addTo(map); }
+  for (var mi = 0; mi < markerObjects.length; mi++) {
+    if (!clusterGroup.hasLayer(markerObjects[mi].marker)) {
+      clusterGroup.addLayer(markerObjects[mi].marker);
+    }
+  }
 }
 
 map.on('click', function () { if (activeFilter) { resetFilter(); } });
@@ -704,7 +752,7 @@ for (var mi = 0; mi < locations.length; mi++) {
       });
     });
 
-    marker.addTo(map);
+    clusterGroup.addLayer(marker);
   })(locations[mi]);
 }
 

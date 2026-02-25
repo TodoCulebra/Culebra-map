@@ -197,6 +197,7 @@
 
   /* ── ROAD CONDITION BADGE ── */
   .road-4x4  { background: #fef3c7; color: #b45309; }
+  .road-sandy { background: #fef3c7; color: #b45309; }
   .road-paved { background: #d1fae5; color: #065f46; }
   .road-boat  { background: #dbeafe; color: #1e40af; }
 
@@ -484,7 +485,8 @@ var locations = [
     desc: 'Marine reserve reef snorkeling &#8212; fish everywhere, turtles &amp; rays. <a href="https://www.snorkelwithlocals.com" target="_blank" style="color:#006994;">snorkelwithlocals.com</a>' },
   { name: 'Playa Zoni', lat: 18.319636, lng: -65.254862, type: 'beach', img: null,
     desc: 'Beautiful 15-min drive from town. Stunning views of Culebrita, Cayo Norte &amp; Saint Thomas.' },
-  { name: 'Playa Flamenco', lat: 18.331667, lng: -65.318056, type: 'beach', img: null,
+  { name: 'Playa Flamenco', lat: 18.328677, lng: -65.316936, type: 'beach', img: null,
+    road: 'paved',
     desc: 'Consistently voted one of the world\'s best beaches. WW2 tanks, white sands, crystal-clear water.' },
   { name: 'Playa Tamarindo', lat: 18.318033, lng: -65.317453, type: 'beach', img: null,
     desc: 'One of the most popular snorkeling beaches in the entire Caribbean. Swim with Turtles, Rays, and even some friendly nurse sharks.' },
@@ -529,9 +531,9 @@ var locations = [
     desc: 'Secondary ATM option in town. Can run out on busy weekends — grab cash early in your trip.' },
 
   /* ── PARKING ── */
-  { name: 'Flamenco Beach Parking', lat: 18.330800, lng: -65.318500, type: 'parking', img: null,
+  { name: 'Flamenco Beach Parking', lat: 18.328490, lng: -65.319426, type: 'parking', img: null,
     hours: 'Sunrise–Sunset', road: 'paved',
-    desc: 'Main parking area for Playa Flamenco. Can fill up fast on weekends — arrive early! Paid parking in season.' },
+    desc: 'Main parking area for Playa Flamenco. Can fill up fast on weekends — arrive early! Paid parking can get expensive. E-Bike parking is free! Rent your E-Bike from <a href="https://www.todoculebra.com" target="_blank" style="color:#006994;">www.todoculebra.com</a> today!' },
   { name: 'Town Center Parking', lat: 18.301500, lng: -65.301200, type: 'parking', img: null,
     hours: 'Always open', road: 'paved',
     desc: 'Free street parking near the main plaza. Great starting point for walking the town.' },
@@ -540,8 +542,8 @@ var locations = [
     desc: 'Small gravel lot at the end of the road to Zoni. Limited spots — 4x4 or E-bike recommended.' },
 
   /* ── RESTROOMS ── */
-  { name: 'Flamenco Beach Facilities', lat: 18.331200, lng: -65.318200, type: 'restroom', img: null,
-    hours: '7am–6pm', road: 'paved',
+  { name: 'Flamenco Beach Facilities', lat: 18.329470, lng: -65.320673, type: 'restroom', img: null,
+    hours: '7am–6pm (inside facility)', road: null,
     desc: 'Public restrooms, cold showers, and changing areas. The best beach facilities on the island.' },
   { name: 'Town Plaza Restrooms', lat: 18.300900, lng: -65.302100, type: 'restroom', img: null,
     hours: '8am–5pm', road: 'paved',
@@ -571,10 +573,6 @@ var locations = [
   { name: 'Water Taxi Dock (Dewey)', lat: 18.302400, lng: -65.302200, type: 'watertaxi', img: null,
     hours: '7am–5pm', road: 'paved',
     desc: 'Main water taxi pickup spot in Dewey. Boats run to Culebrita, Luis Peña, and nearby snorkel spots. Cash only.' },
-  { name: 'Flamenco Water Taxi Landing', lat: 18.332000, lng: -65.316800, type: 'watertaxi', img: null,
-    hours: '8am–4pm', road: 'paved',
-    desc: 'Seasonal water taxi service between Flamenco Beach and town. Great if you don\'t have a vehicle.' },
-
   /* ── ANCHORAGE ── */
   { name: 'Dakity Bay Anchorage', lat: 18.291000, lng: -65.267000, type: 'anchor', img: null,
     road: 'boat',
@@ -590,9 +588,9 @@ var locations = [
     desc: 'Stunning anchorage off Culebrita island. Exposed to NE swell — best in calm conditions. Worth every wave.' },
 
   /* ── HIKING ── */
-  { name: 'Flamenco Hill Trail (WW2 Tanks)', lat: 18.328900, lng: -65.317400, type: 'hike', img: null,
-    road: 'paved',
-    desc: 'Short but steep trail behind Flamenco Beach leading to two WWII tanks covered in colorful graffiti art. About 15 min roundtrip.' },
+  { name: 'Flamenco Tank Trail', lat: 18.332886, lng: -65.322174, type: 'hike', img: null,
+    road: 'sandy',
+    desc: 'Short trail directly behind Flamenco beach with WWII tanks situated on the left side of the trail, and another in the water! A stark reminder of the history of our beach. Visit today! Pro tip: Bring beach shoes, as the sand is VERY soft and gets everywhere!!!' },
   { name: 'Monte Resaca Trail', lat: 18.313000, lng: -65.289000, type: 'hike', img: null,
     road: '4x4',
     desc: 'Culebra\'s highest peak at 650ft. Dry tropical forest with iguanas, frigatebirds, and panoramic views. Bring water — no shade.' },
@@ -705,8 +703,8 @@ var pinEmoji = {
   restroom:'&#128701;', rental:'&#128676;', watertaxi:'&#128674;',
   anchor:'&#9875;', hike:'&#129510;'
 };
-var roadLabels  = { 'paved':'✅ Paved road', '4x4':'🚙 4x4 / E-Bike only', 'boat':'⛵ Boat access only' };
-var roadClasses = { 'paved':'road-paved', '4x4':'road-4x4', 'boat':'road-boat' };
+var roadLabels  = { 'paved':'✅ Paved road', '4x4':'🚙 4x4 / E-Bike only', 'boat':'⛵ Boat access only', 'sandy':'⚠️ Sandy trail' };
+var roadClasses = { 'paved':'road-paved', '4x4':'road-4x4', 'boat':'road-boat', 'sandy':'road-sandy' };
 var typeNames   = {
   beach:'Beach', ferry:'Ferry Terminal', gas:'Gas Station', hector:'Landmark',
   food:'Restaurant', grocery:'Grocery', atm:'ATM', parking:'Parking',

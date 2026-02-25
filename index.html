@@ -549,6 +549,10 @@ var locations = [
   { name: 'Flamenco Beach Kioskos', lat: 18.328980, lng: -65.320050, type: 'food', img: null,
     hours: '9am–6pm', road: null,
     desc: 'Outdoor food and drink kiosks right at Flamenco Beach. Grab pastelillos, empanadas, burgers, steaks and more. Cold drinks and plenty of bars to keep you refreshed all day. Umbrella and beach chair rentals available — everything you need without ever leaving the sand!' },
+
+  { name: 'Culebra Beach Villas', lat: 18.327853, lng: -65.315115, type: 'villa', img: null,
+    hours: 'Open · Closes 5:30 AM', road: 'unpaved',
+    desc: "Culebra's Best Beach Villa, located on Flamenco Beach, you'll wake up to the sounds of the crashing waves and walk out to one of the worlds most beautiful beaches every morning.<br><br>Enhance your stay with grocery or food delivery from <a href='https://www.shopculebra.com' target='_blank' style='color:#006994;'>www.shopculebra.com</a>!<br><br>📍 Flamenco, Culebra 00775, Puerto Rico<br>📞 <a href='tel:+17877546236' style='color:#006994;'>+1 787-754-6236</a>" },
   { name: 'Town Plaza Restrooms', lat: 18.300900, lng: -65.302100, type: 'restroom', img: null,
     hours: '8am–5pm', road: 'paved',
     desc: 'Public restrooms near the main plaza in Dewey. Convenient for visitors exploring town.' },
@@ -699,21 +703,21 @@ var pinColors = {
   beach:'#00b4d8', ferry:'#2563eb', gas:'#ea580c', hector:'#7c3aed',
   food:'#f59e0b', grocery:'#10b981', atm:'#6366f1', parking:'#64748b',
   restroom:'#0891b2', rental:'#d97706', watertaxi:'#1d4ed8',
-  anchor:'#475569', hike:'#16a34a'
+  anchor:'#475569', hike:'#16a34a', villa:'#0891b2'
 };
 var pinEmoji = {
   beach:'&#127958;', ferry:'&#9972;', gas:'&#9981;', hector:'&#129548;',
   food:'&#127860;', grocery:'&#128722;', atm:'&#127967;', parking:'&#128663;',
   restroom:'&#128701;', rental:'&#128676;', watertaxi:'&#128674;',
-  anchor:'&#9875;', hike:'&#129510;'
+  anchor:'&#9875;', hike:'&#129510;', villa:'&#127968;'
 };
-var roadLabels  = { 'paved':'✅ Paved road', '4x4':'🚙 4x4 / E-Bike only', 'boat':'⛵ Boat access only', 'sandy':'⚠️ Sandy trail' };
-var roadClasses = { 'paved':'road-paved', '4x4':'road-4x4', 'boat':'road-boat', 'sandy':'road-sandy' };
+var roadLabels  = { 'paved':'✅ Paved road', '4x4':'🚙 4x4 / E-Bike only', 'boat':'⛵ Boat access only', 'sandy':'⚠️ Sandy trail', 'unpaved':'⚠️ Unpaved road' };
+var roadClasses = { 'paved':'road-paved', '4x4':'road-4x4', 'boat':'road-boat', 'sandy':'road-sandy', 'unpaved':'road-sandy' };
 var typeNames   = {
   beach:'Beach', ferry:'Ferry Terminal', gas:'Gas Station', hector:'Landmark',
   food:'Restaurant', grocery:'Grocery', atm:'ATM', parking:'Parking',
   restroom:'Restrooms', rental:'Rentals', watertaxi:'Water Taxi',
-  anchor:'Anchorage', hike:'Hiking'
+  anchor:'Anchorage', hike:'Hiking', villa:'Villa Rental'
 };
 
 function makePinIcon(type) {

@@ -398,9 +398,9 @@ var locations = [
 ];
 
 /* ══════════════════════════════════════════════════════════════════
-   MAP
+   MAP  — centered above Culebra at zoom 13
 ══════════════════════════════════════════════════════════════════ */
-var map = L.map('map', { zoomControl: false }).setView([18.275, -65.460], 10);
+var map = L.map('map', { zoomControl: false }).setView([18.310, -65.302], 13);
 
 L.tileLayer(
   'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
@@ -409,11 +409,7 @@ L.tileLayer(
 
 L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-/* MARKER CLUSTER GROUP
-   disableClusteringAtZoom: 14 — at zoom 14+ every pin shows individually.
-   maxClusterRadius: 60       — pins must be within 60px to cluster together.
-   The Ceiba terminal is geographically isolated so it will never cluster
-   with Culebra pins and always shows as its own standalone pin.          */
+/* MARKER CLUSTER GROUP */
 var clusterGroup = L.markerClusterGroup({
   disableClusteringAtZoom: 14,
   maxClusterRadius: 60,
@@ -444,14 +440,12 @@ var HomeBtn = L.Control.extend({
   onAdd: function () {
     var c = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
     c.innerHTML = '<button title="Re-center map">&#127968;</button>';
-    L.DomEvent.on(c, 'click', function () { map.setView([18.275, -65.460], 10); });
+    L.DomEvent.on(c, 'click', function () { map.setView([18.310, -65.302], 13); });
     L.DomEvent.disableClickPropagation(c);
     return c;
   }
 });
 map.addControl(new HomeBtn());
-
-/* External geocoder removed — using built-in search above instead */
 
 /* ══════════════════════════════════════════════════════════════════
    FULLSCREEN
@@ -531,12 +525,65 @@ var watchId       = null;
 var activeFilter  = null;
 var markerObjects = [];
 
+/* Ferry route polyline layers — built once, added/removed on demand */
+var ferryRouteLines = [];
+
 function clearRoute() {
   if (activeRoute) {
     try { map.removeControl(activeRoute); } catch (e) {}
     activeRoute = null;
   }
   document.getElementById('turn-panel').classList.remove('open');
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   FERRY ROUTE LINE HELPERS
+   Lines are shown when a ferry terminal popup opens,
+   hidden when that popup closes.
+══════════════════════════════════════════════════════════════════ */
+(function () {
+  var ceiba   = [18.228669, -65.619310];
+  var apex    = [18.205370, -65.615147];
+  var culebra = [18.301451, -65.302530];
+
+  var ctrlLat = (ceiba[0] + apex[0]) / 2 - 0.004;
+  var ctrlLng = (ceiba[1] + apex[1]) / 2 - 0.006;
+  var ctrl    = [ctrlLat, ctrlLng];
+
+  function bezier2(p0, p1, p2, steps) {
+    var pts = [];
+    for (var i = 0; i <= steps; i++) {
+      var t  = i / steps;
+      var u  = 1 - t;
+      pts.push([
+        u*u*p0[0] + 2*u*t*p1[0] + t*t*p2[0],
+        u*u*p0[1] + 2*u*t*p1[1] + t*t*p2[1]
+      ]);
+    }
+    return pts;
+  }
+
+  var seg1 = bezier2(ceiba, ctrl, apex, 50);
+  var seg2 = [apex, culebra];
+
+  [seg1, seg2].forEach(function (pts) {
+    ferryRouteLines.push(
+      L.polyline(pts, { color: '#ffffff', weight: 6, opacity: 0.4, smoothFactor: 1, interactive: false }),
+      L.polyline(pts, { color: '#2563eb', weight: 3, opacity: 0.95, dashArray: '10, 8', smoothFactor: 1, interactive: false })
+    );
+  });
+})();
+
+function showFerryRoute() {
+  ferryRouteLines.forEach(function (line) {
+    if (!map.hasLayer(line)) { line.addTo(map); }
+  });
+}
+
+function hideFerryRoute() {
+  ferryRouteLines.forEach(function (line) {
+    if (map.hasLayer(line)) { map.removeLayer(line); }
+  });
 }
 
 /* ══════════════════════════════════════════════════════════════════
@@ -733,6 +780,9 @@ for (var mi = 0; mi < locations.length; mi++) {
     markerObjects.push({ marker: marker, type: p.type });
 
     marker.on('popupopen', function (e) {
+      /* Show ferry route line when either ferry terminal is tapped */
+      if (p.type === 'ferry') { showFerryRoute(); }
+
       var el         = e.popup.getElement();
       var btn        = el.querySelector('.btn-directions');
       var statusEl   = el.querySelector('.route-status');
@@ -752,69 +802,17 @@ for (var mi = 0; mi < locations.length; mi++) {
       });
     });
 
+    marker.on('popupclose', function () {
+      /* Hide ferry route line when the ferry terminal popup is closed */
+      if (p.type === 'ferry') { hideFerryRoute(); }
+    });
+
     clusterGroup.addLayer(marker);
   })(locations[mi]);
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   FERRY ROUTE LINE
-   Segment 1: Ceiba terminal → apex point (18.205370, -65.615147)
-              rendered as a gentle curve so the line swings around
-              the harbour mouth and stays over open water.
-   Segment 2: apex → Culebra terminal, straight east over ocean.
-══════════════════════════════════════════════════════════════════ */
-(function () {
-
-  var ceiba   = [18.228669, -65.619310];  /* Ceiba terminal                  */
-  var apex    = [18.205370, -65.615147];  /* harbour-exit / curve apex       */
-  var culebra = [18.301451, -65.302530];  /* Culebra terminal                */
-
-  /* ── Segment 1: curved arc from Ceiba down to apex ──────────────
-     We use a quadratic bezier whose control point is offset slightly
-     west of the chord mid-point so the line bows outward into open
-     water rather than cutting across any land.                      */
-  var ctrlLat = (ceiba[0] + apex[0]) / 2 - 0.004;  /* nudge south into ocean */
-  var ctrlLng = (ceiba[1] + apex[1]) / 2 - 0.006;  /* nudge west into ocean  */
-  var ctrl    = [ctrlLat, ctrlLng];
-
-  function bezier2(p0, p1, p2, steps) {
-    var pts = [];
-    for (var i = 0; i <= steps; i++) {
-      var t  = i / steps;
-      var u  = 1 - t;
-      pts.push([
-        u*u*p0[0] + 2*u*t*p1[0] + t*t*p2[0],
-        u*u*p0[1] + 2*u*t*p1[1] + t*t*p2[1]
-      ]);
-    }
-    return pts;
-  }
-
-  var seg1 = bezier2(ceiba, ctrl, apex, 50);
-
-  /* ── Segment 2: straight line from apex east to Culebra ─────── */
-  var seg2 = [apex, culebra];
-
-  /* ── Draw both segments ────────────────────────────────────────
-     White halo first, then the coloured dashed line on top.       */
-  [seg1, seg2].forEach(function (pts) {
-    L.polyline(pts, {
-      color: '#ffffff', weight: 6, opacity: 0.4,
-      smoothFactor: 1, interactive: false
-    }).addTo(map);
-
-    L.polyline(pts, {
-      color: '#2563eb', weight: 3, opacity: 0.95,
-      dashArray: '10, 8', smoothFactor: 1, interactive: false
-    }).addTo(map);
-  });
-
-})();
-
-/* ══════════════════════════════════════════════════════════════════
    BUILT-IN SEARCH
-   Filters over the locations array — no external CDN needed.
-   Clicking a result flies to that marker and opens its popup.
 ══════════════════════════════════════════════════════════════════ */
 function liveSearch(val) {
   var resultsEl = document.getElementById('search-results');
@@ -914,7 +912,6 @@ if (typeof ResizeObserver !== 'undefined') {
    EASTER EGG: SHARK CURSOR
    Desktop only. Hold Ctrl+Shift, press H then L = shark cursor.
    Press Backspace to go back to normal.
-   Works on Chrome/Windows and Mac (both use Ctrl = Control key).
 ================================================================ */
 (function () {
   var sharkSVG =
@@ -952,26 +949,22 @@ if (typeof ResizeObserver !== 'undefined') {
     var ctrl  = e.ctrlKey;
     var shift = e.shiftKey;
 
-    /* Backspace always deactivates */
     if (e.key === 'Backspace' && sharkActive) {
       deactivateShark();
       return;
     }
 
-    /* Ctrl+Shift+H — first key in sequence */
     if (ctrl && shift && (e.key === 'H' || e.key === 'h')) {
       hPressed = true;
       return;
     }
 
-    /* Ctrl+Shift+L — second key, fires easter egg */
     if (ctrl && shift && (e.key === 'L' || e.key === 'l') && hPressed) {
       hPressed = false;
       activateShark();
       return;
     }
 
-    /* Any other key resets the sequence */
     if (!ctrl || !shift) { hPressed = false; }
   });
 

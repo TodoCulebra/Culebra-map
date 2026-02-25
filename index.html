@@ -909,6 +909,76 @@ if (typeof ResizeObserver !== 'undefined') {
 } else {
   setTimeout(function () { map.invalidateSize(); }, 300);
 }
+
+/* ================================================================
+   EASTER EGG: SHARK CURSOR
+   Desktop only. Hold Ctrl+Shift, press H then L = shark cursor.
+   Press Backspace to go back to normal.
+   Works on Chrome/Windows and Mac (both use Ctrl = Control key).
+================================================================ */
+(function () {
+  var sharkSVG =
+    '<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48">' +
+    '<ellipse cx="22" cy="26" rx="18" ry="9" fill="#4a9aba" opacity="0.95"/>' +
+    '<polygon points="4,26 0,16 8,26 0,36" fill="#357a96"/>' +
+    '<polygon points="20,17 26,8 30,17" fill="#357a96"/>' +
+    '<ellipse cx="24" cy="29" rx="12" ry="5" fill="#d0eaf5" opacity="0.8"/>' +
+    '<circle cx="35" cy="24" r="2.2" fill="#1a1a2e"/>' +
+    '<circle cx="35.8" cy="23.2" r="0.7" fill="#fff"/>' +
+    '<path d="M37,27 Q40,30 37,31" stroke="#1a1a2e" stroke-width="1.2" fill="none" stroke-linecap="round"/>' +
+    '<line x1="37.5" y1="27.5" x2="37.5" y2="29.5" stroke="#fff" stroke-width="1"/>' +
+    '<line x1="39" y1="28.5" x2="38.5" y2="30.5" stroke="#fff" stroke-width="1"/>' +
+    '</svg>';
+
+  var sharkCursor = 'url("data:image/svg+xml,' + encodeURIComponent(sharkSVG) + '") 8 24, auto';
+  var sharkActive = false;
+  var hPressed    = false;
+
+  function activateShark() {
+    sharkActive = true;
+    document.body.style.cursor = sharkCursor;
+    var mapEl = document.getElementById('map');
+    if (mapEl) { mapEl.style.cursor = sharkCursor; }
+  }
+
+  function deactivateShark() {
+    sharkActive = false;
+    document.body.style.cursor = '';
+    var mapEl = document.getElementById('map');
+    if (mapEl) { mapEl.style.cursor = ''; }
+  }
+
+  document.addEventListener('keydown', function (e) {
+    var ctrl  = e.ctrlKey;
+    var shift = e.shiftKey;
+
+    /* Backspace always deactivates */
+    if (e.key === 'Backspace' && sharkActive) {
+      deactivateShark();
+      return;
+    }
+
+    /* Ctrl+Shift+H — first key in sequence */
+    if (ctrl && shift && (e.key === 'H' || e.key === 'h')) {
+      hPressed = true;
+      return;
+    }
+
+    /* Ctrl+Shift+L — second key, fires easter egg */
+    if (ctrl && shift && (e.key === 'L' || e.key === 'l') && hPressed) {
+      hPressed = false;
+      activateShark();
+      return;
+    }
+
+    /* Any other key resets the sequence */
+    if (!ctrl || !shift) { hPressed = false; }
+  });
+
+  document.addEventListener('keyup', function (e) {
+    if (e.key === 'Control' || e.key === 'Shift') { hPressed = false; }
+  });
+})();
 </script>
 </body>
 </html>

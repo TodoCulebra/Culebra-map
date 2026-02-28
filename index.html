@@ -624,7 +624,7 @@ var locations = [
   { name: 'Monte Resaca Trail', lat: 18.313000, lng: -65.289000, type: 'hike', img: null,
     road: '4x4',
     desc: 'Culebra\'s highest peak at 650ft. Dry tropical forest with iguanas, frigatebirds, and panoramic views. Bring water — no shade.' },
-  { name: 'Punta Molino Coastal Path', lat: 18.285000, lng: -65.272000, type: 'hike', img: null,
+  { name: 'Punta Molino Coastal Path', lat: 18.281816, lng: -65.286433, type: 'hike', img: null,
     road: '4x4',
     desc: 'Remote coastal walk along the SE peninsula. Rugged terrain with incredible views and total solitude. E-bike or 4x4 to trailhead.' }
 ];
@@ -895,6 +895,61 @@ function hideFerryRoute() {
 }
 
 /* ══════════════════════════════════════════════════════════════════
+   PUNTA MOLINO COASTAL TRAIL LINE
+   Shown when Punta Molino popup opens, hidden on close.
+   Runs from trailhead → coast point → southern end, hugging
+   the natural curve of the coastline via a bezier arc.
+══════════════════════════════════════════════════════════════════ */
+var molinoTrailLines = [];
+
+(function () {
+  var start  = [18.281816, -65.286433];  /* pin / trailhead          */
+  var mid    = [18.281996, -65.285822];  /* coast entry point        */
+  var end    = [18.277699, -65.286289];  /* southern end of trail    */
+
+  /* Bezier control point — nudge slightly east to follow coastline curve */
+  var ctrlLat = (mid[0] + end[0]) / 2 + 0.0005;
+  var ctrlLng = (mid[1] + end[1]) / 2 + 0.0008;
+  var ctrl    = [ctrlLat, ctrlLng];
+
+  function bezier2(p0, p1, p2, steps) {
+    var pts = [];
+    for (var i = 0; i <= steps; i++) {
+      var t = i / steps, u = 1 - t;
+      pts.push([
+        u*u*p0[0] + 2*u*t*p1[0] + t*t*p2[0],
+        u*u*p0[1] + 2*u*t*p1[1] + t*t*p2[1]
+      ]);
+    }
+    return pts;
+  }
+
+  /* Segment 1: straight connector from pin to coast */
+  var seg1 = [start, mid];
+  /* Segment 2: curved coastal trail */
+  var seg2 = bezier2(mid, ctrl, end, 60);
+
+  [seg1, seg2].forEach(function (pts) {
+    molinoTrailLines.push(
+      L.polyline(pts, { color: '#ffffff', weight: 5, opacity: 0.35, smoothFactor: 1, interactive: false }),
+      L.polyline(pts, { color: '#16a34a', weight: 3, opacity: 0.9, dashArray: '8, 6', smoothFactor: 1, interactive: false })
+    );
+  });
+})();
+
+function showMolinoTrail() {
+  molinoTrailLines.forEach(function (line) {
+    if (!map.hasLayer(line)) { line.addTo(map); }
+  });
+}
+
+function hideMolinoTrail() {
+  molinoTrailLines.forEach(function (line) {
+    if (map.hasLayer(line)) { map.removeLayer(line); }
+  });
+}
+
+/* ══════════════════════════════════════════════════════════════════
    FILTER LOGIC
 ══════════════════════════════════════════════════════════════════ */
 function filterMarkers(type) {
@@ -1096,6 +1151,8 @@ for (var mi = 0; mi < locations.length; mi++) {
     marker.on('popupopen', function (e) {
       /* Show ferry route line when either ferry terminal is tapped */
       if (p.type === 'ferry') { showFerryRoute(); }
+      /* Show Molino trail when its popup opens */
+      if (p.name === 'Punta Molino Coastal Path') { showMolinoTrail(); }
 
       /* Hide cat bar while popup is open */
       document.getElementById('cat-bar').classList.add('hidden');
@@ -1139,6 +1196,8 @@ for (var mi = 0; mi < locations.length; mi++) {
     marker.on('popupclose', function () {
       /* Hide ferry route line when the ferry terminal popup is closed */
       if (p.type === 'ferry') { hideFerryRoute(); }
+      /* Hide Molino trail when popup closes */
+      if (p.name === 'Punta Molino Coastal Path') { hideMolinoTrail(); }
       /* Show cat bar again */
       document.getElementById('cat-bar').classList.remove('hidden');
     });

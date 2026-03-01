@@ -703,6 +703,32 @@ var locations = [
   { name: 'Monte Resaca Trail', lat: 18.325436, lng: -65.302859, type: 'hike', img: null,
     road: '4x4',
     desc: 'Culebra\'s highest peak at 650ft. Dry tropical forest with iguanas, frigatebirds, and panoramic views. Bring water — no shade.' },
+
+  /* ── SNORKELING ── */
+  { name: 'Snorkeling — Playa Melones', lat: 18.304032, lng: -65.312297, type: 'snorkel', img: null,
+    road: 'paved', tags: ['snorkel','snorkeling','reef','fish','turtles','rays','swimming'],
+    desc: 'One of the best shore-entry snorkel spots on the island. Thriving reef with tropical fish, sea turtles, and eagle rays. Marine reserve — no fishing.' },
+
+  { name: 'Snorkeling — Playa Tamarindo', lat: 18.319382, lng: -65.320860, type: 'snorkel', img: null,
+    road: '4x4', tags: ['snorkel','snorkeling','reef','turtles','nurse sharks','rays','swimming'],
+    desc: 'World-class snorkeling with sea turtles, nurse sharks, eagle rays, and colorful reef fish. One of the most popular snorkel spots in the entire Caribbean.' },
+
+  { name: 'Snorkeling — Playa Mosquito', lat: 18.297036, lng: -65.266141, type: 'snorkel', img: null,
+    road: '4x4', nosignal: true, tags: ['snorkel','snorkeling','reef','remote','off grid','fish','swimming'],
+    desc: 'Remote and pristine snorkeling on Culebra's eastern coast. Untouched reef teeming with life. 4x4 or E-bike required. Off grid — weak to no cell signal. Worth every bit of the journey.' },
+
+  { name: 'Snorkeling — Playa Sardinas', lat: 18.301167, lng: -65.310267, type: 'snorkel', img: null,
+    road: 'paved', tags: ['snorkel','snorkeling','reef','fish','swimming','calm water'],
+    desc: 'Calm, shallow snorkeling perfect for beginners and families. Protected waters with a variety of reef fish and coral formations.' },
+
+  { name: 'Snorkeling — Flamenco El Muellicito Patch Reef', lat: 18.331246, lng: -65.313846, type: 'snorkel', img: null,
+    road: 'paved', tags: ['snorkel','snorkeling','patch reef','reef','fish','flamenco','swimming'],
+    desc: 'Patch reef just off Flamenco Beach — easy swim from shore. Great coral formations and abundant tropical fish. A hidden gem right next to one of the world's best beaches.' },
+
+  { name: 'Snorkeling — Carlos Rosario Beach', lat: 18.326324, lng: -65.330802, type: 'snorkel', img: null,
+    road: 'boat', tags: ['snorkel','snorkeling','reef','fish','turtles','boat access','swimming','marine reserve'],
+    desc: 'A true bucket-list snorkel spot. Pristine marine reserve reef accessible by boat or a scenic hike. Expect turtles, reef sharks, rays, and some of the clearest water on the island.' }
+
   { name: 'Punta Molino Coastal Path', lat: 18.281816, lng: -65.286433, type: 'hike', img: null,
     road: '4x4',
     desc: '⚠️ EXTREMELY RUGGED TERRAIN — EXPERIENCED HIKERS ONLY!!! HIKE AT YOUR OWN RISK!!! Remote coastal walk along the SE peninsula. Rugged terrain with incredible views and total solitude. E-bike or 4x4 to trailhead.' }
@@ -816,7 +842,8 @@ var legendCategories = [
   { type: 'hike',      label: 'Hiking',        color: '#16a34a' },
   { type: 'grocery',   label: 'Grocery',       color: '#10b981' },
   { type: 'hector',    label: 'Hector',        color: '#7c3aed' },
-  { type: 'fishmarket', label: 'Fish Market',   color: '#0e7490' }
+  { type: 'fishmarket', label: 'Fish Market',   color: '#0e7490' },
+  { type: 'snorkel',    label: 'Snorkeling',    color: '#06b6d4' }
 ];
 
 function buildLegend() {
@@ -863,13 +890,13 @@ var pinColors = {
   beach:'#00b4d8', ferry:'#2563eb', gas:'#ea580c', hector:'#7c3aed',
   food:'#f59e0b', grocery:'#10b981', atm:'#6366f1', parking:'#64748b',
   restroom:'#0891b2', rental:'#7c3aed', watertaxi:'#1d4ed8',
-  anchor:'#475569', hike:'#16a34a', villa:'#0891b2', fishmarket:'#0e7490'
+  anchor:'#475569', hike:'#16a34a', villa:'#0891b2', fishmarket:'#0e7490', snorkel:'#06b6d4'
 };
 var pinEmoji = {
   beach:'&#127958;', ferry:'&#9972;', gas:'&#9981;', hector:'&#129548;',
   food:'&#127860;', grocery:'&#128722;', atm:'&#127967;', parking:'&#128663;',
   restroom:'&#128701;', rental:'&#128676;', watertaxi:'&#128674;',
-  anchor:'&#9875;', hike:'&#129510;', villa:'&#127968;', fishmarket:'&#127997;'
+  anchor:'&#9875;', hike:'&#129510;', villa:'&#127968;', fishmarket:'&#127997;', snorkel:'&#129300;'
 };
 var roadLabels  = { 'paved':'✅ Paved road', '4x4':'🚙 4x4 / E-Bike only', 'boat':'⛵ Boat access only', 'sandy':'⚠️ Sandy trail', 'unpaved':'⚠️ Unpaved road', 'dirt':'🟤 Dirt road' };
 var roadClasses = { 'paved':'road-paved', '4x4':'road-4x4', 'boat':'road-boat', 'sandy':'road-sandy', 'unpaved':'road-sandy', 'dirt':'road-4x4' };
@@ -877,7 +904,7 @@ var typeNames   = {
   beach:'Beach', ferry:'Ferry Terminal', gas:'Gas Station', hector:'Landmark',
   food:'Restaurant', grocery:'Grocery', atm:'ATM', parking:'Parking',
   restroom:'Restrooms', rental:'Rentals', watertaxi:'Water Taxi',
-  anchor:'Anchorage', hike:'Hiking', villa:'Villa Rental', fishmarket:'Fish Market'
+  anchor:'Anchorage', hike:'Hiking', villa:'Villa Rental', fishmarket:'Fish Market', snorkel:'Snorkeling'
 };
 
 function makePinIcon(type) {

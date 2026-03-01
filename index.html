@@ -512,12 +512,19 @@ var locations = [
   { name: 'Playa Datiles', lat: 18.296597, lng: -65.300179, type: 'beach', img: null,
     desc: 'Most romantic beach in the Caribbean! Views of Cayo Luis Pe&ntilde;a, Vieques &amp; El Yunque. 4x4 or E-Bike required.' },
   { name: 'Playa Melones', lat: 18.303114, lng: -65.310380, type: 'beach', img: null,
+    tags: ['beach','snorkeling','reef','turtles','rays','marine reserve','swimming'],
     desc: 'Marine reserve reef snorkeling &#8212; fish everywhere, turtles &amp; rays. <a href="https://www.snorkelwithlocals.com" target="_blank" style="color:#006994;">snorkelwithlocals.com</a>' },
+  { name: 'Playa Larga', lat: 18.305164, lng: -65.244714, type: 'beach', img: null,
+    road: 'dirt', nosignal: true,
+    tags: ['beach','remote','secluded','off grid','no signal','dirt road','swimming','hidden beach'],
+    desc: 'Remote and untouched beach on Culebra\'s eastern coast. Truly off the beaten path — bring everything you need. No facilities, no crowds, no signal. Pure Caribbean solitude.' },
+
   { name: 'Playa Zoni', lat: 18.319636, lng: -65.254862, type: 'beach', img: null,
     road: '4x4',
     desc: 'Beautiful 15-min drive from town. Stunning views of Culebrita, Cayo Norte &amp; Saint Thomas. 4x4/E-Bike required for entry. Golf Carts strictly prohibited.' },
   { name: 'Playa Flamenco', lat: 18.328677, lng: -65.316936, type: 'beach', img: null,
     road: 'paved',
+    tags: ['beach','swimming','snorkeling','white sand','tanks','ww2','flamenco'],
     desc: 'Consistently voted one of the world\'s best beaches. WW2 tanks, white sands, crystal-clear water.' },
   { name: 'Playa Tamarindo', lat: 18.318033, lng: -65.317453, type: 'beach', img: null,
     desc: 'One of the most popular snorkeling beaches in the entire Caribbean. Swim with Turtles, Rays, and even some friendly nurse sharks.' },
@@ -528,18 +535,23 @@ var locations = [
   /* ── FOOD & DRINK ── */
   { name: 'El Batey', lat: 18.305833, lng: -65.302444, type: 'food', img: null,
     hours: '11am–10pm', road: 'paved',
+    tags: ['restaurant','bar','beer','drinks','puerto rican','local food','mofongo','seafood'],
     desc: 'Local favorite for cold Medallas and classic Puerto Rican dishes. Casual open-air vibes right in town.' },
   { name: 'Susie\'s Restaurant', lat: 18.312342, lng: -65.292104, type: 'food', img: null,
     hours: '8am–3pm', road: 'paved',
+    tags: ['restaurant','breakfast','lunch','seafood','fresh fish','local food'],
     desc: 'Beloved breakfast and lunch spot. Famous for their fresh fish plates and friendly service.' },
   { name: 'Dinghy Dock Restaurant', lat: 18.302332, lng: -65.299312, type: 'food', img: null,
     hours: '11am–9pm', road: 'paved',
+    tags: ['restaurant','bar','seafood','waterfront','drinks','beer','cocktails','fresh fish'],
     desc: 'Right on the water with tarpon swimming below your feet. Cold drinks, fresh seafood, and unbeatable sunsets.' },
   { name: 'Heather\'s Pizza', lat: 18.301981, lng: -65.301885, type: 'food', img: null,
     hours: '5pm–10pm', road: 'paved',
+    tags: ['restaurant','pizza','dinner','wood fired','vegetarian','vegan options'],
     desc: 'Best pizza on the island — wood-fired with fresh toppings. Popular with locals and visitors alike.' },
   { name: 'Mamacita\'s Restaurant & Bar', lat: 18.302109, lng: -65.300196, type: 'food', img: null,
     hours: '8am–10pm', road: 'paved',
+    tags: ['restaurant','bar','cocktails','painkiller','grilled fish','seafood','steak','breakfast','brunch','waterfront'],
     desc: 'Iconic Culebra institution on the canal. Known for the frozen painkiller cocktail and grilled fish.' },
 
   /* ── GROCERY & ESSENTIALS ── */
@@ -566,6 +578,7 @@ var locations = [
 
   { name: 'Flamenco Beach Kioskos', lat: 18.328980, lng: -65.320050, type: 'food', img: null,
     hours: '9am–6pm', road: null,
+    tags: ['bar','food','kiosko','pastelillos','empanadas','burgers','steak','drinks','beer','cocktails','beach food','snacks'],
     desc: 'Outdoor food and drink kiosks right at Flamenco Beach. Grab pastelillos, empanadas, burgers, steaks and more. Cold drinks and plenty of bars to keep you refreshed all day. Umbrella and beach chair rentals available — everything you need without ever leaving the sand!' },
 
   { name: 'Culebra Beach Villas', lat: 18.327853, lng: -65.315115, type: 'villa', img: null,
@@ -577,17 +590,21 @@ var locations = [
   /* ── RENTALS ── */
   { name: 'Jerry\'s Rentals', lat: 18.311078, lng: -65.303957, type: 'rental', img: null,
     hours: '8am–5pm', road: 'paved',
+    tags: ['golf cart','golf cart rental','e-bike','ebike','snorkel','rental','cart'],
     desc: 'Golf carts, E-bikes, and snorkel gear. Popular spot — reserve ahead during peak season.' },
   { name: 'Todo Culebra E-Bikes', lat: 18.309638, lng: -65.303761, type: 'rental', img: null,
-    hours: '8am–5pm', road: 'paved',
+    hours: '7am–9pm', road: 'paved',
+    tags: ['e-bike','ebike','bike','bicycle','rental','golf cart alternative','electric bike'],
     desc: 'E-bikes and regular bikes for rent. The best way to explore Culebra sustainably — and reach beaches that ban golf carts. Visit <a href="https://www.todoculebra.com" target="_blank" style="color:#006994;">www.todoculebra.com</a> to book today!' },
   { name: 'Carlos Jeep Rental', lat: 18.310186, lng: -65.303285, type: 'rental', img: null,
     hours: '8am–4pm', road: 'paved',
+    tags: ['car rental','jeep','4x4','4wd','truck','vehicle rental','car'],
     desc: '4WD jeeps and trucks for rent. Required for reaching Punta Soldado, Datiles, and other remote spots.' },
 
   { name: 'UTV Rental Puerto Rico', lat: 18.310959, lng: -65.304725, type: 'rental', img: null,
     hours: '8am–5pm', road: 'paved',
-    desc: 'UTV and off-road vehicle rentals — the perfect way to tackle Culebra\'s rugged roads and reach the most remote beaches. Great for groups. Reserve ahead during peak season.' },
+    tags: ['utv','golf cart','golf cart rental','cart','rental','vehicle','buggy','group rental'],
+    desc: 'UTV and golf cart rentals — a great way to get to Culebra\'s most popular beaches. Note: not suitable for rugged terrain or large hilltops. Great for groups. Reserve ahead during peak season.' },
 
   { name: 'Colmado Costa Del Sol', lat: 18.311344, lng: -65.305111, type: 'grocery', img: null,
     hours: '7am–9pm', road: 'paved',
@@ -785,8 +802,8 @@ var pinEmoji = {
   restroom:'&#128701;', rental:'&#128676;', watertaxi:'&#128674;',
   anchor:'&#9875;', hike:'&#129510;', villa:'&#127968;', fishmarket:'&#127997;'
 };
-var roadLabels  = { 'paved':'✅ Paved road', '4x4':'🚙 4x4 / E-Bike only', 'boat':'⛵ Boat access only', 'sandy':'⚠️ Sandy trail', 'unpaved':'⚠️ Unpaved road' };
-var roadClasses = { 'paved':'road-paved', '4x4':'road-4x4', 'boat':'road-boat', 'sandy':'road-sandy', 'unpaved':'road-sandy' };
+var roadLabels  = { 'paved':'✅ Paved road', '4x4':'🚙 4x4 / E-Bike only', 'boat':'⛵ Boat access only', 'sandy':'⚠️ Sandy trail', 'unpaved':'⚠️ Unpaved road', 'dirt':'🟤 Dirt road' };
+var roadClasses = { 'paved':'road-paved', '4x4':'road-4x4', 'boat':'road-boat', 'sandy':'road-sandy', 'unpaved':'road-sandy', 'dirt':'road-4x4' };
 var typeNames   = {
   beach:'Beach', ferry:'Ferry Terminal', gas:'Gas Station', hector:'Landmark',
   food:'Restaurant', grocery:'Grocery', atm:'ATM', parking:'Parking',
@@ -1107,14 +1124,15 @@ for (var mi = 0; mi < locations.length; mi++) {
     var typeName  = typeNames[p.type]  || p.type;
     var typeTag   = '<span class="popup-type-tag" style="background:' + typeColor + '22;color:' + typeColor + '">' + typeName + '</span>';
     var roadTag    = p.road ? '<span class="popup-road-tag ' + (roadClasses[p.road]||'') + '">' + (roadLabels[p.road]||p.road) + '</span>' : '';
-    var parkingTag = p.parking ? '<span class="popup-road-tag road-paved">🅿️ Parking available</span>' : '';
+    var parkingTag  = p.parking ? '<span class="popup-road-tag road-paved">🅿️ Parking available</span>' : '';
+    var nosignalTag = p.nosignal ? '<span class="popup-road-tag road-4x4">📵 Off grid / Weak to no cell signal</span>' : '';
     var hoursHtml = p.hours ? '<div class="popup-hours"><span class="open-dot">●</span> ' + p.hours + '</div>' : '';
 
     var popupHtml =
       imgHtml +
       '<div class="popup-body">' +
         '<div class="popup-title">' + p.name + '</div>' +
-        '<div class="popup-type-row">' + typeTag + roadTag + parkingTag + '</div>' +
+        '<div class="popup-type-row">' + typeTag + roadTag + parkingTag + nosignalTag + '</div>' +
         hoursHtml +
         '<div class="dist-badge" id="dist-' + mi + '">📍 calculating…</div>' +
         '<div class="popup-desc">'  + p.desc  + '</div>' +
@@ -1203,9 +1221,17 @@ function liveSearch(val) {
   var matches = [];
   for (var si = 0; si < markerObjects.length; si++) {
     var loc = locations[si];
+    var tagMatch = false;
+    if (loc.tags) {
+      for (var ti = 0; ti < loc.tags.length; ti++) {
+        if (loc.tags[ti].toLowerCase().indexOf(val) !== -1) { tagMatch = true; break; }
+      }
+    }
     if (loc.name.toLowerCase().indexOf(val) !== -1 ||
         (loc.type && loc.type.indexOf(val) !== -1) ||
-        ((typeNames[loc.type]||'').toLowerCase().indexOf(val) !== -1)) {
+        ((typeNames[loc.type]||'').toLowerCase().indexOf(val) !== -1) ||
+        (loc.desc && loc.desc.toLowerCase().indexOf(val) !== -1) ||
+        tagMatch) {
       matches.push({ idx: si, name: loc.name, lat: loc.lat, lng: loc.lng, type: loc.type });
     }
   }
